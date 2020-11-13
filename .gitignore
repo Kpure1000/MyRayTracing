@@ -1,0 +1,9 @@
+# file
+*.user
+
+# direction
+*.vs
+*/Debug/
+*/Release/
+
+*/x64/
