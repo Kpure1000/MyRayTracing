@@ -42,7 +42,7 @@ Vector3 GetColorFromRay(Ray& ray)
 int main()
 {
 	auto startTime = clock();
-	int nx = 1920, ny = 1080, nChannel = 3;
+	int nx = 1024, ny = 768, nChannel = 3;
 
 	Vector3 lower_left_corner(-2.0f, -1.0f, -1.0f);
 	Vector3 horizontal(4.0f, 0.0f, 0.0f);
