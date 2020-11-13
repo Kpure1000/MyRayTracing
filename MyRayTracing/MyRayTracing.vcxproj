@@ -149,6 +149,7 @@
     <ClInclude Include="HitList.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Ray.h" />
+    <ClInclude Include="RayMath.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>

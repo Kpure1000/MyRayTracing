@@ -2,6 +2,7 @@
 #define MATERIAL_H
 #include"Ray.h"
 #include"Hitable.h"
+
 namespace ry
 {
 	class Material
@@ -15,7 +16,7 @@ namespace ry
 	{
 	public:
 
-		
+		Lambertian(const Vector3 Albedo) :albedo(Albedo) {}
 
 		/*
 		* À¼²®ÌØÂş·´Éä

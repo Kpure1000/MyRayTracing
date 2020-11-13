@@ -13,8 +13,15 @@ namespace ry
 
 		Sphere(const Vector3& Center, const float& Radius) : center(Center), radius(Radius) {}
 
+		Sphere(const Vector3& Center, const float& Radius, Material *mat)
+			: center(Center), radius(Radius), Hitable(mat) {}
+
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
 		{
+			if (material != nullptr)
+			{
+				rec.mat = material;
+			}
 			Vector3 o2c = r.Origin() - center;
 			float a = Vector3::Dot(r.Direction(), r.Direction());
 			float b = 2.0f * Vector3::Dot(o2c, r.Direction());
