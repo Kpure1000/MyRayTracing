@@ -1,22 +1,28 @@
 #include<iostream>
 #include<fstream>
 #include<ctime>
+#include<random>
+#include<stb/stb_image_write.h>
 
 #include"Vector3.h"
 #include"Ray.h"
 #include"Sphere.h"
 #include"HitList.h"
-#include<stb/stb_image_write.h>
+#include"Camera.h"
 
 using namespace std;
 using namespace ry;
+#define SAD 255.99
 
-Vector3 GetColorFromRay(Ray& ray, Hitable* world)
+#define MAX_FLOAT 1e3f
+
+Vector3 GetColorFromRay(const Ray& ray, Hitable* world)
 {
 	HitRecord rec;
-	if (world->Hit(ray, 0.0001f, 1000.0f, rec))
+	if (world->Hit(ray, 0.001f, MAX_FLOAT, rec))
 	{
-		return 0.5f * Vector3(rec.normal[0] + 1, rec.normal[1] + 1, rec.normal[2] + 1);
+		Vector3 target = rec.vertex + rec.normal + random_in_unit_ball();
+		return 0.5f * GetColorFromRay(Ray(rec.vertex, target - rec.vertex), world);
 	}
 	else
 	{
@@ -29,7 +35,8 @@ Vector3 GetColorFromRay(Ray& ray, Hitable* world)
 int main()
 {
 	auto startTime = clock();
-	int nx = 512, ny = 288, nChannel = 3;
+	int nx = 409; int ny = 216;int nChannel = 3;
+	int ns=100;
 
 	Vector3 left_bottom_corner(-2.0f, -1.0f, -1.0f);
 	Vector3 horizontal(4.0f, 0.0f, 0.0f);
@@ -41,19 +48,28 @@ int main()
 	HitList world(2);
 	world.list[0] = new Sphere({ 0,0,-1 }, 0.5f);
 	world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f);
+	Camera camera({ -2.0f,-1.0f,-1.0f }, Vector3::Zero, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
+	Ray r;
+	Vector3 color;
 
 	for (int j = ny - 1; j >= 0; j--)
 	{
 		for (int i = 0; i < nx; i++)
 		{
-			float u = float(i) / float(nx);
-			float v = float(j) / float(ny);
-			Ray r(origin, left_bottom_corner + u * horizontal + v * vertival);
-			Vector3 color = GetColorFromRay(r, &world);
-
-			imageData[j * nx * nChannel + i * nChannel] = int(255.99 * color[0]);
-			imageData[j * nx * nChannel + i * nChannel + 1] = int(255.99 * color[1]);
-			imageData[j * nx * nChannel + i * nChannel + 2] = int(255.99 * color[2]);
+			color = Vector3::Zero;
+			float u, v;
+			for (int k = 0; k < ns; k++)
+			{
+				u = float(i + rand() % 100 / (float)100) / float(nx);
+				v = float(j + rand() % 100 / (float)100) / float(ny);
+				r = camera.GetRay(u, v);
+				color += GetColorFromRay(r, &world);
+			}
+			color /= float(ns);
+			color = Vector3(sqrtf(color[0]), sqrtf(color[1]), sqrtf(color[2]));
+			imageData[j * nx * nChannel + i * nChannel] = int(SAD * color[0]);
+			imageData[j * nx * nChannel + i * nChannel + 1] = int(SAD * color[1]);
+			imageData[j * nx * nChannel + i * nChannel + 2] = int(SAD * color[2]);
 		}
 	}
 
@@ -62,5 +78,6 @@ int main()
 	stbi_flip_vertically_on_write(true);
 	stbi_write_bmp("outImage.bmp", nx, ny, nChannel, imageData);
 	cout << "Êä³öÍ¼ÏñÍê±Ï" << endl;
+	system("outImage.bmp");
 	free(imageData);
 }

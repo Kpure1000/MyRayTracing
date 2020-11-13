@@ -169,5 +169,20 @@ namespace ry
 		return v2 / v2.Magnitude();
 	}
 
+	Vector3 random_in_unit_ball()
+	{
+		Vector3 re;
+		do
+		{
+			re = 2.0f * Vector3(rand() % 100 / (float)100,
+				rand() % 100 / (float)100, rand() % 100 / (float)100);
+		} while (re.Magnitude() > 1.0f);
+		return re;
+	}
+
+	Vector3 Reflect(const Vector3& v, const Vector3& n)
+	{
+		return v - 2 * Vector3::Dot(v, n) * n;
+	}
 }
 #endif // !VECTOR3_H

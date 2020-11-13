@@ -5,6 +5,8 @@
 namespace ry
 {
 
+	class Metarial;
+
 	struct HitRecord
 	{
 		float t;

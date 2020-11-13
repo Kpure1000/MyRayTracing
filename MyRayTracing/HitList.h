@@ -16,7 +16,7 @@ namespace ry
 
 		~HitList()
 		{
-			if (list != nullptr)
+			if (list)
 			{
 				free(list);
 			}

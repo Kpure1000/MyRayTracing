@@ -144,6 +144,7 @@
     <ClCompile Include="stb_init.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />
     <ClInclude Include="Ray.h" />
