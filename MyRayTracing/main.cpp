@@ -4,52 +4,43 @@
 
 #include"Vector3.h"
 #include"Ray.h"
+#include"Sphere.h"
+#include"HitList.h"
 #include<stb/stb_image_write.h>
 
 using namespace std;
 using namespace ry;
 
-
-float GetRayParamFromHitSphere(Vector3 center, float radius, Ray ray)
+Vector3 GetColorFromRay(Ray& ray, Hitable* world)
 {
-	auto oc = ray.Origin() - center;
-	float a = Vector3::Dot(ray.Direction(), ray.Direction());
-	float b = 2.0f * Vector3::Dot(oc, ray.Direction());
-	float c = Vector3::Dot(oc, oc) - radius * radius;
-	float discriminant = b * b - 4 * a * c; //  ÅÐ±ðÊ½
-	if (discriminant >= 0)
+	HitRecord rec;
+	if (world->Hit(ray, 0.0001f, 1000.0f, rec))
 	{
-		return (-b - sqrt(discriminant)) / (2.0f * a);
+		return 0.5f * Vector3(rec.normal[0] + 1, rec.normal[1] + 1, rec.normal[2] + 1);
 	}
-	return -1.0f;
-}
-Vector3 GetColorFromRay(Ray& ray)
-{
-	Vector3 center = { 0,0,-100 };
-	float redius = 50.0f;
-	float t = GetRayParamFromHitSphere(center, redius, ray);
-	Vector3 normal;
-	if (t > 0.0f)
+	else
 	{
-		normal = (ray.PointTo(t) - center).Normalize();
-		return 0.5f * Vector3(normal[0] + 1, normal[1] + 1, normal[2] + 1);
+		Vector3 space = ray.Direction().Normalize();
+		float t = 0.5f * (space[1] + 1.0f);
+		return (1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f);
 	}
-	normal = ray.Direction().Normalize();
-	t = 0.5f * (normal.y() + 1.0f);
-	return (1.0f - t) * Vector3::one() + t * Vector3(0.5f, 0.7f, 1.0f);
 }
 
 int main()
 {
 	auto startTime = clock();
-	int nx = 1024, ny = 768, nChannel = 3;
+	int nx = 512, ny = 288, nChannel = 3;
 
-	Vector3 lower_left_corner(-2.0f, -1.0f, -1.0f);
+	Vector3 left_bottom_corner(-2.0f, -1.0f, -1.0f);
 	Vector3 horizontal(4.0f, 0.0f, 0.0f);
 	Vector3 vertival(0.0f, 2.0f, 0.0f);
 	Vector3 origin(0, 0, 0);
 
 	unsigned char* imageData = (unsigned char*)malloc(nx * ny * nChannel * sizeof(unsigned char));
+
+	HitList world(2);
+	world.list[0] = new Sphere({ 0,0,-1 }, 0.5f);
+	world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f);
 
 	for (int j = ny - 1; j >= 0; j--)
 	{
@@ -57,8 +48,8 @@ int main()
 		{
 			float u = float(i) / float(nx);
 			float v = float(j) / float(ny);
-			Ray r(origin, lower_left_corner + u * horizontal + v * vertival);
-			Vector3 color = GetColorFromRay(r);
+			Ray r(origin, left_bottom_corner + u * horizontal + v * vertival);
+			Vector3 color = GetColorFromRay(r, &world);
 
 			imageData[j * nx * nChannel + i * nChannel] = int(255.99 * color[0]);
 			imageData[j * nx * nChannel + i * nChannel + 1] = int(255.99 * color[1]);

@@ -15,14 +15,9 @@ namespace ry
 			v[2] = z;
 		}
 
-		inline static Vector3 one()
-		{
-			return Vector3(1.0f, 1.0f, 1.0f);
-		}
+		static Vector3 One;
 
-		inline static Vector3 zero() {
-			return { 0,0,0 };
-		}
+		static Vector3 Zero;
 
 		inline float x()const { return v[0]; }
 		inline float y()const { return v[1]; }
@@ -128,6 +123,10 @@ namespace ry
 
 		float v[3];
 	};
+
+	Vector3 Vector3::Zero = { 0.0f, 0.0f, 0.0f };
+
+	Vector3 Vector3::One = { 1.0f, 1.0f, 1.0f };
 
 	inline Vector3 operator+(const Vector3& v1, const Vector3& v2)
 	{

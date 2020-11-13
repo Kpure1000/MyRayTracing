@@ -15,7 +15,7 @@ namespace ry
 
 		Vector3 Direction()const { return B; }
 
-		Vector3 PointTo(const float& t) { return A + t * B; }
+		Vector3 PointTo(const float& t)const { return A + t * B; }
 
 		Vector3 A;
 		Vector3 B;
