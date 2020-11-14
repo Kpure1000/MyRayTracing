@@ -11,7 +11,7 @@ namespace ry
 	{
 	public:
 		float t;
-		Vector3 vertex;
+		Vector3 hitPoint;
 		Vector3 normal;
 		Material* mat;
 	};

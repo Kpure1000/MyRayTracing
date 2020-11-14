@@ -14,10 +14,16 @@ Vector3 randomUnitVector()
 	return re;
 }
 
-Vector3 Reflect(const Vector3& v, const Vector3& n)
+Vector3 Reflect(const Vector3& in, const Vector3& normal)
 {
-	return v - 2 * Vector3::Dot(v, n) * n;
+	return in - 2 * Vector3::Dot(in, normal) * normal;
 }
+
+Vector3 Refract(const Vector3& in, const Vector3& normal, const float& refRate)
+{
+	return (refRate - 1) * Vector3::Dot(in, normal) * normal - refRate * in;
+}
+
 #endif // !RAYMATH_H
 
 #ifndef MAX_FLOAT
@@ -25,6 +31,6 @@ Vector3 Reflect(const Vector3& v, const Vector3& n)
 #endif // !MAX_FLOAT
 
 #ifndef TO_RGB
-#define TO_RGB 255.99
+#define TO_RGB 255.5f
 
 #endif // !_TO_RGB

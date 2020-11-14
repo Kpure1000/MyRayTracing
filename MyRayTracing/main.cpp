@@ -35,7 +35,7 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, int maxDepth)
 	{
 		Vector3 space = ray.Direction().Normalize();
 		float t = 0.5f * (space[1] + 1.0f);
-		return (1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f);
+		return (1.0f - t) * Vector3::One + t * Vector3(1.0f, 0.8f, 0.05f);
 	}
 }
 
@@ -44,7 +44,7 @@ int main()
 	int nx = 512; //  宽
 	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿相关
+	int ns = 50; //  抗锯齿相关
 	int maxTraceDepth = 50;
 
 	Vector3 left_bottom_corner(-2.0f, -1.0f, -1.0f);
@@ -52,13 +52,29 @@ int main()
 	Vector3 vertival(0.0f, 2.0f, 0.0f);
 	Vector3 origin(0, 0, 0);
 
-	unsigned char* imageData = (unsigned char*)malloc(nx * ny * nChannel * sizeof(unsigned char));
+	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
-	HitList world(4);
-	world.list[0] = new Sphere({ 0,0,-1 }, 0.5f, new Lambertian({ 1.0f,1.0f,1.0f }));
-	world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }));
-	world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
-	world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Metal({ 0.7f,0.4f,0.9f }));
+	HitList world(5);
+	/*world.list[0] = new Sphere({ 0,0,-1 }, 0.5f, new Lambertian({ 1.0f,1.0f,1.0f }));*/
+	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Metal({ 1.0f,1.0f,1.0f }, 1.8f));
+	world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Dielectric(1.8f));
+
+	world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Lambertian({ 0.5f,0.5f,0.5f }));
+	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }, 0.0f));
+	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Dielectric(1.4f));
+
+	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
+	world.list[2] = new Sphere({ 1.1f,0,-1 }, 0.5f, new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
+	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Dielectric(1.6f));
+
+	//world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Lambertian({ 0.7f,0.4f,0.9f }));
+	//world.list[3] = new Sphere({ -1.1f,0,-1 }, 0.5f, new Metal({ 0.7f,0.4f,0.9f }, 0.0f));
+	world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric(1.5f));
+
+	world.list[4] = new Sphere({ 0.0f,0.2f,-4.9f }, 1.98f, new Lambertian({ 0.9f,0.2f,0.5f }));
+	//world.list[4] = new Sphere({ 0,0,-10 }, 10.0f, new Metal({ 0.7f,0.4f,0.9f }, 0.0f));
+	//world.list[4] = new Sphere({ 0,0,-10 }, 10.0f, new Dielectric(1.5f));
+
 	Camera camera({ -2.0f,-1.0f,-1.0f }, Vector3::Zero, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Ray r;
 	Vector3 color;
@@ -67,6 +83,17 @@ int main()
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n开始渲染...\n";
 
 	auto startTime = clock(); //  开始时间
+
+	if (nChannel > 4)
+	{
+		cout << "颜色通道大于4, 退出.\n";
+		return 1;
+	}
+	if (imageData == nullptr)
+	{
+		cout << "申请图形空间错误, 退出.\n";
+		return 1;
+	}
 
 	for (int j = ny - 1; j >= 0; j--)
 	{

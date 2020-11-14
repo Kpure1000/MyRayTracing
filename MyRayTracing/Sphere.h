@@ -33,16 +33,16 @@ namespace ry
 				if (tmpResult<tMax && tmpResult >tMin)
 				{
 					rec.t = tmpResult;
-					rec.vertex = r.PointTo(tmpResult);
-					rec.normal = (rec.vertex - center).Normalize();
+					rec.hitPoint = r.PointTo(tmpResult);
+					rec.normal = (rec.hitPoint - center).Normalize();
 					return true;
 				}
 				tmpResult = (-b + sqrtf(discriminant)) / (2.0f * a);
 				if (tmpResult<tMax && tmpResult >tMin)
 				{
 					rec.t = tmpResult;
-					rec.vertex = r.PointTo(tmpResult);
-					rec.normal = (rec.vertex - center).Normalize();
+					rec.hitPoint = r.PointTo(tmpResult);
+					rec.normal = (rec.hitPoint - center).Normalize();
 					return true;
 				}
 			}

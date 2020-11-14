@@ -22,9 +22,6 @@ namespace ry
 		inline float x()const { return v[0]; }
 		inline float y()const { return v[1]; }
 		inline float z()const { return v[2]; }
-		inline float r()const { return v[0]; }
-		inline float g()const { return v[1]; }
-		inline float b()const { return v[2]; }
 
 		bool operator== (const Vector3& b)const
 		{
