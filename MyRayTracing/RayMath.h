@@ -31,9 +31,9 @@ Vector3 Reflect(const Vector3& in, const Vector3& normal)
 bool Refract(const Vector3& in, const Vector3& normal, const float& refRate, Vector3& refracted)
 {
 	//float dot_in_n = Vector3::Dot(in, normal);
-	//if (refRate < 1) //  从光疏介质到光密介质
+	//if (refRate <= 1) //  从光疏介质到光密介质
 	//{
-	//	refracted = (refRate - 1) * dot_in_n * normal - refRate * in;
+	//	refracted = in * refRate + normal * dot_in_n * (1 + refRate);
 	//	return true;
 	//}
 	//else //  从光密介质到光疏介质
@@ -41,13 +41,12 @@ bool Refract(const Vector3& in, const Vector3& normal, const float& refRate, Vec
 	//	float re_refRate = 1.0f / refRate;
 	//	float consine_in = dot_in_n / in.Magnitude();
 	//	float sinsine_in_sq = 1 - consine_in * consine_in;
-	//	if (sinsine_in_sq < re_refRate * re_refRate) //  未到全内反射角
+	//	if (sinsine_in_sq <= re_refRate * re_refRate) //  未到全内反射角
 	//	{
-	//		refracted = (refRate - 1) * dot_in_n * normal - refRate * in;
+	//		refracted = in * refRate + normal * dot_in_n * (1 + refRate);
 	//		return true;
 	//	}
 	//}
-	//std::cout << "全反射\n";
 	//return false;
 	Vector3 uvin = Vector3::Normalize(in);
 	float dt = Vector3::Dot(uvin, normal);
@@ -58,6 +57,13 @@ bool Refract(const Vector3& in, const Vector3& normal, const float& refRate, Vec
 		return true;
 	}
 	return false;
+}
+
+float Schlick(const float& cosine, const float& refRate)
+{
+	float r0 = (1 - refRate) / (1 + refRate);
+	r0 *= r0;
+	return r0 + (1 - r0) * powf((1 - cosine), 5);
 }
 
 #endif // !RAYMATH_H

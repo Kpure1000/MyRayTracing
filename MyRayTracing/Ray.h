@@ -9,16 +9,16 @@ namespace ry
 
 		Ray() {}
 
-		Ray(const Vector3& a, const Vector3& b) { A = a; B = b; }
+		Ray(const Vector3& a, const Vector3& b) { origin = a; direction = b; }
 
-		Vector3 Origin()const { return A; }
+		Vector3 Origin()const { return origin; }
 
-		Vector3 Direction()const { return B; }
+		Vector3 Direction()const { return direction; }
 
-		Vector3 PointTo(const float& t)const { return A + t * B; }
+		Vector3 PointTo(const float& t)const { return origin + t * direction; }
 
-		Vector3 A;
-		Vector3 B;
+		Vector3 origin;
+		Vector3 direction;
 	};
 }
 #endif

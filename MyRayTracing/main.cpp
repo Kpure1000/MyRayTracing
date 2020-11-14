@@ -34,18 +34,18 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, int maxDepth)
 	}
 	else
 	{
-		Vector3 space = ray.Direction().Normalize();
-		float t = 0.5f * (space[1] + 1.0f);
-		return (1.0f - t) * Vector3::One + t * Vector3(0.0f, 0.1f, 0.0f);
+		Vector3 sky = ray.Direction().Normalize();
+		float t = 0.5f * (sky[1] + 1.0f);
+		return (1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f);
 	}
 }
 
 int main()
 {
-	int nx = 400; //  宽
-	int ny = 200; //  高
+	int nx = 2560; //  宽
+	int ny = 1440; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 50; //  抗锯齿(蒙特卡洛采样)
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 50;
 
 	Vector3 left_bottom_corner(-2.0f, -1.0f, -1.0f);
@@ -76,7 +76,7 @@ int main()
 	//world.list[4] = new Sphere({ 0,0,-10 }, 10.0f, new Metal({ 0.7f,0.4f,0.9f }, 0.0f));
 	//world.list[4] = new Sphere({ 0,0,-10 }, 10.0f, new Dielectric({ 1,1,1 },1.5f));
 
-	Camera camera({ -2.0f,-1.0f,-1.0f }, Vector3::Zero, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
+	Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,1 }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Ray r;
 	Color color;
 

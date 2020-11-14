@@ -53,7 +53,7 @@ namespace ry
 		*/
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			Vector3 reflected = Reflect(rayIn.Direction().Normalize(), rec.normal);
+			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
 			scattered = Ray(rec.hitPoint, reflected + fuzz * randomUnitVector());
 			attenuation = albedo;
 			return (Vector3::Dot(scattered.Direction(), rec.normal) > 0);
@@ -80,28 +80,35 @@ namespace ry
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
 			Vector3 refracted;
-			Vector3 reflected = Reflect(rayIn.Direction().Normalize(), rec.normal);
-			Vector3 rayDir = rayIn.Direction().Normalize();
+			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
 			attenuation = albedo;
+
+			float cosine;
+
 			bool isRefracted;
-			if (Vector3::Dot(rayDir, rec.normal) > 0)
+
+			if (Vector3::Dot(rayIn.Direction(), rec.normal) > 0)
 			{
-				isRefracted = Refract(rayIn.Direction().Normalize(), -rec.normal, refractive_Indices, refracted);
+				isRefracted = Refract(rayIn.Direction(), -rec.normal, refractive_Indices, refracted);
+				cosine = refractive_Indices * Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
 			else 
 			{
-				isRefracted = Refract(rayIn.Direction().Normalize(), rec.normal, 1.0f / refractive_Indices, refracted);
+				isRefracted = Refract(rayIn.Direction(), rec.normal, 1.0f / refractive_Indices, refracted);
+				cosine = -Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
+
 			if (isRefracted)
 			{
-				scattered = Ray(rec.hitPoint, refracted);
+				if (rand() % 100 / float(100) <= Schlick(cosine, refractive_Indices))
+				{
+					isRefracted = false;
+				}
 			}
-			else
-			{
-				std::cout << "Material: 全反射\n";
-				scattered = Ray(rec.hitPoint, reflected);
-				//scattered = Ray(rec.hitPoint, refracted);
-			}
+
+			// 判断是否全反射
+			scattered = Ray(rec.hitPoint, isRefracted == true ? refracted : reflected);
+			
 			return true;
 		}
 
