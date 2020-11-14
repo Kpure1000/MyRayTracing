@@ -2,6 +2,7 @@
 #define MATERIAL_H
 #include"Ray.h"
 #include"Hitable.h"
+#include<iostream>
 
 namespace ry
 {
@@ -70,7 +71,7 @@ namespace ry
 	{
 	public:
 
-		Dielectric(const float& Refractive_Indices) : refractive_Indices(Refractive_Indices) {}
+		Dielectric(const Vector3 &Albedo, const float& Refractive_Indices) :albedo(Albedo), refractive_Indices(Refractive_Indices) {}
 
 		/*
 		* 折射
@@ -79,20 +80,33 @@ namespace ry
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
 			Vector3 refracted;
+			Vector3 reflected = Reflect(rayIn.Direction().Normalize(), rec.normal);
 			Vector3 rayDir = rayIn.Direction().Normalize();
+			attenuation = albedo;
+			bool isRefracted;
 			if (Vector3::Dot(rayDir, rec.normal) > 0)
 			{
-				refracted = Refract(rayIn.Direction().Normalize(), -rec.normal, refractive_Indices);
+				isRefracted = Refract(rayIn.Direction().Normalize(), -rec.normal, refractive_Indices, refracted);
 			}
 			else 
 			{
-				refracted = Refract(rayIn.Direction().Normalize(), rec.normal, 1.0f / refractive_Indices);
+				isRefracted = Refract(rayIn.Direction().Normalize(), rec.normal, 1.0f / refractive_Indices, refracted);
 			}
-			scattered = Ray(rec.hitPoint, refracted - rec.hitPoint);
-			attenuation = Vector3::One;
+			if (isRefracted)
+			{
+				scattered = Ray(rec.hitPoint, refracted);
+			}
+			else
+			{
+				std::cout << "Material: 全反射\n";
+				scattered = Ray(rec.hitPoint, reflected);
+				//scattered = Ray(rec.hitPoint, refracted);
+			}
 			return true;
 		}
 
+		//反射率
+		Vector3 albedo;
 
 		//折射率
 		float refractive_Indices;

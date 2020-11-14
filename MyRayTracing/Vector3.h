@@ -105,6 +105,7 @@ namespace ry
 			return (*this) /= (*this).Magnitude();
 		}
 
+		Vector3 static Normalize(const Vector3& v2);
 
 		inline static float Dot(const Vector3& v1, const Vector3& v2)
 		{
@@ -161,7 +162,7 @@ namespace ry
 		return Vector3(v2[0] * k, v2[1] * k, v2[2] * k);
 	}
 
-	inline Vector3 Normalize(const Vector3 &v2)
+	inline Vector3 Vector3::Normalize(const Vector3 &v2)
 	{
 		return v2 / v2.Magnitude();
 	}
