@@ -14,6 +14,9 @@ namespace ry
 			list = (Hitable**)malloc(sizeof(Hitable*) * size);
 		}
 
+		HitList(Hitable** List, int listSize) :list(List), size(listSize)
+		{}
+
 		~HitList()
 		{
 			if (list)

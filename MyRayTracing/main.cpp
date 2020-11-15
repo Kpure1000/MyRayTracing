@@ -58,7 +58,43 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
 
-void funcTest(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8, int n9, int n10, int n11) {}
+HitList *randomScence()
+{
+	int n = 500;
+	Hitable** list = new Hitable * [n + 1];
+	list[0] = new Sphere(SdfSphere({ 0,-1000,0 }, 1000), new Lambertian({ 0.2f,0.9f,0.2f }));
+	int i = 1;
+	for (int i = -11; i < 11; i++)
+	{
+		for (int j = -11; j < 11; j++)
+		{
+			float choose_mat = Drand48();
+			Vector3 center(i + 0.9f * Drand48(), 0.2f, j + 0.9f * Drand48());
+			if ((center - Vector3(4.0f, 0.2f, 0.0f)).Magnitude() > 0.9f)
+			{
+				if (choose_mat < 0.8f)
+				{
+					list[i++] = new Sphere(SdfSphere(center, 0.2), new Lambertian(
+						{ (float)Drand48() * (float)Drand48() ,
+						(float)Drand48() * (float)Drand48() ,
+						(float)Drand48() * (float)Drand48() }));
+				}
+				if (choose_mat < 0.95f)
+				{
+					list[i++] = new Sphere(SdfSphere(center, 0.2f), new Metal({
+						0.5f * (float)(1 + Drand48()),0.5f * (float)(1 + Drand48()) ,0.5f * (float)(1 + Drand48()) },
+							0.5f * Drand48()));
+				}
+				else
+				{
+					list[i++] = new Sphere(SdfSphere(center, 0.2), new Dielectric({ 1,1,1 }, 1.5));
+				}
+			}
+		}
+	}
+
+	return new HitList(list, i);
+}
 
 int run(int threadIndex, ofstream& out)
 {
@@ -73,52 +109,34 @@ int run(int threadIndex, ofstream& out)
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 #pragma region worldInit
-	HitList world(4);
-	world.list[0] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
+	HitList* world = new HitList(4);
+	(*world).list[0] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
 	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Metal({ 1.0f,1.0f,1.0f }, 1.8f));
 	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
 
-	world.list[1] = new Sphere(SdfSphere({ 0,-100.5f,-1 }, 100.0f), new Lambertian({ 0.8f,0.8f,0.0f }));
+	(*world).list[1] = new Sphere(SdfSphere({ 0,-100.5f,-1 }, 100.0f), new Lambertian({ 0.8f,0.8f,0.0f }));
 	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }, 0.3f));
 	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Dielectric({ 1,1,1 },1.4f));
 
 	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
-	world.list[2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
+	(*world).list[2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
 
 	//world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Lambertian({ 0.7f,0.4f,0.9f }));
 	//world.list[3] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	world.list[3] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	(*world).list[3] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	//world.list[4] = new Sphere({ 1,1,-1 }, 0.5f, new Lambertian({ 0.4f,0.9f,0.3f }));
-	//world.list[4] = new Sphere({ 1.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	//world.list[4] = new Sphere({ -1,0,-1 }, -0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	//HitList* world = randomScence();
 
-	////world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
-	//world.list[5] = new Sphere({ 0.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	////world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
-
-	////world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
-	//world.list[6] = new Sphere({ -1.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	////world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
-
-	////world.list[7] = new Sphere({ 1,0.5f,-2 }, 0.5f, new Lambertian({ 0.4f,0.9f,0.3f }));
-	//world.list[7] = new Sphere({ 1.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	////world.list[7] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
-
-	////world.list[8] = new Sphere({ 0,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
-	//world.list[8] = new Sphere({ 0.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	////world.list[8] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
-
-	////world.list[9] = new Sphere({ -1,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
-	//world.list[9] = new Sphere({ -1.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	////world.list[9] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
 #pragma endregion
-
+	Vector3 lookFrom(-20,20, 10);
+	Vector3 lookAt(0, 0, -1);
+	float dist_to_focus = (lookFrom - lookAt).Magnitude();
+	float aperture = 0.0f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
-	Camera camera({ 0.0f,2.0f,-3.0f }, { 0,0,-1 },
-		{ 3,1,0 }, 65, float(nx) / float(ny));
+	Camera camera(lookFrom, lookAt,
+		{ 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 	out << "第" << threadIndex << "次渲染准备\n";
@@ -165,7 +183,7 @@ int run(int threadIndex, ofstream& out)
 		endFlag[curTask] = 0.0f;
 		rtThread[curTask] = new thread(RayTraceThread,
 			(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-			nx, ny, nChannel, ns, &camera, &world, maxTraceDepth, &endFlag[curTask]);
+			nx, ny, nChannel, ns, &camera, world, maxTraceDepth, &endFlag[curTask]);
 	}
 
 	for (int i = 0; i < threadNum; i++)
@@ -194,7 +212,7 @@ int run(int threadIndex, ofstream& out)
 					endFlag[i] = 0.0f;
 					rtThread[i] = new thread(RayTraceThread,
 						(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-						nx, ny, nChannel, ns, &camera, &world, maxTraceDepth, &endFlag[i]);
+						nx, ny, nChannel, ns, &camera, world, maxTraceDepth, &endFlag[i]);
 					curTask++;
 					curEndTask++;
 					rtThread[i]->detach();
@@ -275,7 +293,7 @@ int run(int threadIndex, ofstream& out)
 					u = float(i + rand() % 100 / (float)100) / float(nx);
 					v = float(j + rand() % 100 / (float)100) / float(ny);
 					r = camera.GetRay(u, v);
-					color.rgb += RayTracer(r, &world, maxTraceDepth);
+					color.rgb += RayTracer(r, world, maxTraceDepth);
 				}
 				color.rgb /= float(ns);
 				color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
@@ -308,6 +326,7 @@ int run(int threadIndex, ofstream& out)
 
 int main()
 {
+	Srand48((unsigned int)time(NULL));
 	ofstream testOut("renderLog.txt");
 	testOut << "渲染日志: \n\n";
 	for (int i = 1; i <= 1; i++)
@@ -333,8 +352,10 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			float u, v;
 			for (int k = 0; k < ns; k++)
 			{
-				u = float(i + rand() % 100 / (float)100) / float(nx);
-				v = float(j + rand() % 100 / (float)100) / float(ny);
+				/*u = float(i + rand() % 100 / (float)100) / float(nx);
+				v = float(j + rand() % 100 / (float)100) / float(ny);*/
+				u = float(i + Drand48()) / float(nx);
+				v = float(j + Drand48()) / float(ny);
 				r = (*camera).GetRay(u, v);
 				color.rgb += RayTracer(r, world, maxTraceDepth);
 			}
