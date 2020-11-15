@@ -5,6 +5,11 @@
 
 using namespace ry;
 
+#ifndef Pi
+#define Pi (acosf(-1.0f))
+#endif // !Pi
+
+
 Vector3 randomUnitVector()
 {
 	Vector3 re;

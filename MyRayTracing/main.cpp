@@ -18,45 +18,20 @@
 #include<Windows.h>
 #endif // !__linux__
 
+// 开启多线程
 #define MULTI_THREAD 
+
+// 用来折叠部分代码
+#ifndef CODE_FOLDER
+#define CODE_FOLDER
+#endif // !CODE_FOLDER
+
 
 using namespace std;
 using namespace ry;
 
 Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
 {
-	//Vector3 result;
-	//Ray newRay = ray;
-	//int MaxDeep = maxDepth;
-	//while (1)
-	//{
-	//	HitRecord rec;
-	//	if (world->Hit(ray, 0.001f, MAX_FLOAT, rec))
-	//	{
-	//		Ray scattered;
-	//		Vector3 attenuation;
-	//		if (MaxDeep > 0 && rec.mat->Scatter(newRay, rec, attenuation, scattered))
-	//		{
-	//			newRay = scattered;
-	//			result *= attenuation;
-	//		}
-	//		else
-	//		{
-	//			//result *= Vector3::Zero;
-	//			break;
-	//		}
-	//	}
-	//	else
-	//	{
-	//		Vector3 sky = newRay.Direction().Normalize();
-	//		float t = 0.5f * (sky[1] + 1.0f);
-	//		//result *= ((1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f));
-	//		break;
-	//	}
-	//	MaxDeep--;
-	//}
-	//return result;
-
 	HitRecord rec;
 	if (world->Hit(ray, 0.001f, MAX_FLOAT, rec))
 	{
@@ -85,88 +60,99 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 
 void funcTest(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8, int n9, int n10, int n11) {}
 
-int main()
+int run(int threadIndex, ofstream& out)
 {
-	int nx = 2560; //  宽
-	int ny = 1440; //  高
-	int nChannel = 3; //  颜色通道数量
-	int ns = 10000; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 70;
+	out << "线程指数: " << threadIndex << "\n";
 
-	Vector3 left_bottom_corner(-2.0f, -1.0f, -1.0f);
-	Vector3 horizontal(4.0f, 0.0f, 0.0f);
-	Vector3 vertival(0.0f, 2.0f, 0.0f);
-	Vector3 origin(0, 0, 0);
+	int nx = 512; //  宽
+	int ny = 288; //  高
+	int nChannel = 3; //  颜色通道数量
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 50;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
-	HitList world(10);
-	//world.list[0] = new Sphere({ 0,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.3f,0.3f }));
+#pragma region worldInit
+	HitList world(4);
+	world.list[0] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
 	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Metal({ 1.0f,1.0f,1.0f }, 1.8f));
-	world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
+	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
 
-	world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Lambertian({ 0.8f,0.8f,0.0f }));
-	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }, 0.4f));
+	world.list[1] = new Sphere(SdfSphere({ 0,-100.5f,-1 }, 100.0f), new Lambertian({ 0.8f,0.8f,0.0f }));
+	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }, 0.3f));
 	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Dielectric({ 1,1,1 },1.4f));
 
-	world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
-	//world.list[2] = new Sphere({ 1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.6f,0.2f }, 0.2f));
+	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
+	world.list[2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
 
 	//world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Lambertian({ 0.7f,0.4f,0.9f }));
-	world.list[3] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	//world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
+	//world.list[3] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	world.list[3] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
 	//world.list[4] = new Sphere({ 1,1,-1 }, 0.5f, new Lambertian({ 0.4f,0.9f,0.3f }));
-	//world.list[4] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	world.list[4] = new Sphere({ 1,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
+	//world.list[4] = new Sphere({ 1.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	//world.list[4] = new Sphere({ -1,0,-1 }, -0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	//world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
-	//world.list[5] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
+	////world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
+	//world.list[5] = new Sphere({ 0.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	////world.list[5] = new Sphere({ 0,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
 
-	//world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
-	//world.list[6] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
+	////world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
+	//world.list[6] = new Sphere({ -1.0f,1,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	////world.list[6] = new Sphere({ -1,1,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.3f));
 
-	world.list[7] = new Sphere({ 1,0.5f,-2 }, 0.5f, new Lambertian({ 0.4f,0.9f,0.3f }));
-	//world.list[7] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	//world.list[7] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	////world.list[7] = new Sphere({ 1,0.5f,-2 }, 0.5f, new Lambertian({ 0.4f,0.9f,0.3f }));
+	//world.list[7] = new Sphere({ 1.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	////world.list[7] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	world.list[8] = new Sphere({ 0,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
-	//world.list[8] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	//world.list[8] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	////world.list[8] = new Sphere({ 0,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.6f,0.2f }));
+	//world.list[8] = new Sphere({ 0.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	////world.list[8] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	world.list[9] = new Sphere({ -1,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
-	//world.list[9] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	//world.list[9] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	////world.list[9] = new Sphere({ -1,0.5f,-2 }, 0.5f, new Lambertian({ 0.6f,0.1f,0.8f }));
+	//world.list[9] = new Sphere({ -1.0f,0.5f,-2 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
+	////world.list[9] = new Sphere({ -1,0,-1 }, 0.5f, new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.4f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
+#pragma endregion
+
+	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
+	Camera camera({ 0.0f,2.0f,-3.0f }, { 0,0,-1 },
+		{ 3,1,0 }, 65, float(nx) / float(ny));
 	Ray r;
 	Color color;
-
+	out << "第" << threadIndex << "次渲染准备\n";
+	out << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
+		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
 	cout << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
-
-	auto startTime = clock(); //  开始时间
-
 	if (nChannel > 4)
 	{
+		out << "颜色通道大于4, 退出.\n";
 		cout << "颜色通道大于4, 退出.\n";
 		return 1;
 	}
 	if (imageData == nullptr)
 	{
+		out << "申请图形空间错误, 退出.\n";
 		cout << "申请图形空间错误, 退出.\n";
 		return 1;
 	}
+
 
 #ifdef MULTI_THREAD
 	SYSTEM_INFO systemInfo;
 	GetSystemInfo(&systemInfo);
 	int coreNum = (int)(systemInfo.dwNumberOfProcessors);
-	int threadNum = coreNum - 1;
-	int taskNum = threadNum * 6;
+	int threadNum = coreNum - 2;
+	int taskNum = threadNum * min(max(1, nx / 256), 20);
+	//int taskNum = threadNum * threadIndex;
+	out << "任务数: " << taskNum << "\n"; cout << "任务数: " << taskNum << "\n";
+	cout << "准备开始渲染" << endl;
+	system("pause");
+
+	out << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
+	auto startTime = clock(); //  开始时间
 
 	thread** rtThread = (thread**)malloc(sizeof(thread*) * threadNum);
 
@@ -176,7 +162,6 @@ int main()
 
 	for (; curTask < threadNum; curTask++)
 	{
-		printf("开启第%d个任务\n", curTask + 1);
 		endFlag[curTask] = 0.0f;
 		rtThread[curTask] = new thread(RayTraceThread,
 			(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
@@ -205,7 +190,6 @@ int main()
 			{
 				if (curTask < taskNum)
 				{
-					//printf("开启第%d个任务\n", curTask + 1);
 					delete rtThread[i];
 					endFlag[i] = 0.0f;
 					rtThread[i] = new thread(RayTraceThread,
@@ -232,13 +216,16 @@ int main()
 		cTime = clock();
 		if (sTime >= 100)
 		{
+			system("cls");
 			printf("进度: %3.0f%%\n", (curRate + curEndTask) / (float)(taskNum) * 100);
 			sTime = 0;
 		}
 
 		if (endNum == threadNum && curTask == taskNum)
 		{
-			printf("完成: %3.0f%%\n", (curTask) / (float)(taskNum) * 100);
+			system("cls");
+			printf("渲染完成.%3.0f%%\n\n", (curTask) / (float)(taskNum) * 100);
+			out << "渲染完成.\n";
 			break;
 		}
 	}
@@ -252,40 +239,84 @@ int main()
 	free(endFlag);
 
 #else
-	for (int j = 0; j < ny; j++)
-	{
-		for (int i = 0; i < nx; i++)
+
+	float curRate = 0.0f;
+	cout << "准备开始渲染" << endl;
+	system("pause");
+	out << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
+	cout << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
+	auto startTime = clock(); //  开始时间
+
+	thread([](float* curRate)->void
 		{
-			color.rgb = Vector3::Zero;
-			float u, v;
-			for (int k = 0; k < ns; k++)
+			auto sTime = 0;
+			auto cTime = sTime;
+			while ((*curRate) < 1.5f)
 			{
-				u = float(i + rand() % 100 / (float)100) / float(nx);
-				v = float(j + rand() % 100 / (float)100) / float(ny);
-				r = camera.GetRay(u, v);
-				color.rgb += RayTracer(r, &world, maxTraceDepth);
-	}
-			color.rgb /= float(ns);
-			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
-			for (int ch = 0; ch < nChannel; ch++)
-			{
-				imageData[j * nx * nChannel + i * nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
+				sTime += clock() - cTime;
+				cTime = clock();
+				if (sTime >= 100 && (*curRate) < 1.5f)
+				{
+					system("cls");
+					printf("进度: %3.0f%%\n", (*curRate) * 100);
+					sTime = 0;
+				}
 			}
-}
-	}
+		}, &curRate).detach();
+
+		for (int j = 0; j < ny; j++)
+		{
+			for (int i = 0; i < nx; i++)
+			{
+				color.rgb = Vector3::Zero;
+				float u, v;
+				for (int k = 0; k < ns; k++)
+				{
+					u = float(i + rand() % 100 / (float)100) / float(nx);
+					v = float(j + rand() % 100 / (float)100) / float(ny);
+					r = camera.GetRay(u, v);
+					color.rgb += RayTracer(r, &world, maxTraceDepth);
+				}
+				color.rgb /= float(ns);
+				color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
+				for (int ch = 0; ch < nChannel; ch++)
+				{
+					imageData[j * nx * nChannel + i * nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
+				}
+			}
+			curRate = j / (float)ny;
+		}
+
+		curRate = 2.0f;
+
 #endif // MULTI_THREAD
 
-	cout << "离线渲染结束,用时: " << (float)(clock() - startTime) / 1000.0f << "s. 正在输出图像..." << endl;
+		out << "第" << threadIndex << "次离线渲染结束,用时: "
+			<< (float)(clock() - startTime) / 1000.0f
+			<< "s.\n--------------------------\n";
+		cout << "第" << threadIndex << "次离线渲染结束,用时: "
+			<< (float)(clock() - startTime) / 1000.0f
+			<< "s.\n--------------------------\n";
+		stbi_flip_vertically_on_write(true);
+		stbi_write_bmp("outImage.bmp", nx, ny, nChannel, imageData);
+		cout << "输出图像完毕" << endl;
+		system("outImage.bmp");
+		free(imageData);
 
-	stbi_flip_vertically_on_write(true);
-	stbi_write_bmp("outImage.bmp", nx, ny, nChannel, imageData);
-	cout << "输出图像完毕" << endl;
-	system("outImage.bmp");
-	system("git add -A;git commit -m \"add:multi-thread and processing show\"");
-	system("git push origin master");
-	system("shutdown -s -t 5");
-	free(imageData);
+		return 0;
+}
 
+int main()
+{
+	ofstream testOut("renderLog.txt");
+	testOut << "渲染日志: \n\n";
+	for (int i = 1; i <= 1; i++)
+	{
+		if (run(i, testOut) == 1)
+			return 1;
+	}
+	testOut.close();
+	system("pause");
 }
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,

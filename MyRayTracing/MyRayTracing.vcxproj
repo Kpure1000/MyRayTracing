@@ -142,16 +142,21 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="stb_init.cpp" />
+    <ClCompile Include="ThreadPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
+    <ClInclude Include="NoCopyAble.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayMath.h" />
+    <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="Vector3.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

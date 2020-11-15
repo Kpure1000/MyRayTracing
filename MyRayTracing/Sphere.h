@@ -1,7 +1,8 @@
 #ifndef SPHERE_H
 #define SPHERE_H
 #include "Hitable.h"
-
+#include"Sdf.h"
+using namespace sdf;
 namespace ry
 {
 
@@ -11,47 +12,34 @@ namespace ry
 
 		Sphere() {}
 
-		Sphere(const Vector3& Center, const float& Radius) : center(Center), radius(Radius) {}
+		Sphere(SdfSphere sphere)
+			: sdfSphere(sphere)
+		{
+		}
 
-		Sphere(const Vector3& Center, const float& Radius, Material *mat)
-			: center(Center), radius(Radius), Hitable(mat) {}
+		Sphere(SdfSphere sphere, Material* mat)
+			: sdfSphere(sphere), Hitable(mat)
+		{
+		}
 
-		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
+		virtual bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& rec)const
 		{
 			if (material != nullptr)
 			{
 				rec.mat = material;
 			}
-			Vector3 o2c = r.Origin() - center;
-			float a = Vector3::Dot(r.Direction(), r.Direction());
-			float b = 2.0f * Vector3::Dot(o2c, r.Direction());
-			float c = Vector3::Dot(o2c, o2c) - radius * radius;
-			float discriminant = b * b - 4 * a * c;
+			float discriminant;
+			bool isHit = sdfSphere.sdf(r, tMin, tMax, discriminant, rec.t);
 			if (discriminant > 0)
 			{
-				float tmpResult = (-b - sqrtf(discriminant)) / (2.0f * a);
-				if (tmpResult<tMax && tmpResult >tMin)
-				{
-					rec.t = tmpResult;
-					rec.hitPoint = r.PointTo(tmpResult);
-					rec.normal = (rec.hitPoint - center).Normalize();
-					return true;
-				}
-				tmpResult = (-b + sqrtf(discriminant)) / (2.0f * a);
-				if (tmpResult<tMax && tmpResult >tMin)
-				{
-					rec.t = tmpResult;
-					rec.hitPoint = r.PointTo(tmpResult);
-					rec.normal = (rec.hitPoint - center).Normalize();
-					return true;
-				}
+				rec.hitPoint = r.PointTo(rec.t);
+				rec.normal = (rec.hitPoint - sdfSphere.center) / sdfSphere.radius;
 			}
-			return false;
+			return isHit;
 		}
 
-		Vector3 center;
-
-		float radius;
+		SdfSphere sdfSphere;
 
 	};
 
