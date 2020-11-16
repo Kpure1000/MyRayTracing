@@ -125,8 +125,9 @@ namespace sdf
 		/*相交区域的*/
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
-			return sdfA->sdf(p, sdfResult)
+			bool isIn = sdfA->sdf(p, sdfResult)
 				&& sdfB->sdf(p, sdfResult);
+			return isIn;
 		}
 
 		Sdf* sdfA;

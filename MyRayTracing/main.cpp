@@ -73,14 +73,14 @@ HitList *randomScence(int maxSize,int randomIndex)
 			Vector3 center(x + 0.9f * Drand48(), 0.2f, y + 0.9f * Drand48());
 			if ((center - Vector3(4.0f, 0.2f, 0.0f)).Magnitude() > 0.9f)
 			{
-				if (choose_mat < 0.8f)
+				if (choose_mat < 0.7f)
 				{
 					list[i++] = new Sphere(SdfSphere(center, 0.2f), new Lambertian(
 						{ (float)Drand48() * (float)Drand48() ,
 						(float)Drand48() * (float)Drand48() ,
 						(float)Drand48() * (float)Drand48() }));
 				}
-				else if (choose_mat < 0.95f)
+				else if (choose_mat < 0.85f)
 				{
 					list[i++] = new Sphere(SdfSphere(center, 0.2f), new Metal({
 						0.5f * (float)(1 + Drand48()),0.5f * (float)(1 + Drand48()) ,0.5f * (float)(1 + Drand48()) },
@@ -101,11 +101,11 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 512; //  宽
-	int ny = 288; //  高
+	int nx = 400; //  宽
+	int ny = 200; //  高
 	int nChannel = 3; //  颜色通道数量
 	int ns = 50; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 50;
+	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
@@ -118,11 +118,14 @@ int run(int threadIndex, ofstream& out)
 	int MaxWorldSize = 500;
 	world = randomScence(MaxWorldSize, 0);
 	(*world).size += 1;
-	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
+	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,1.5f,-1 }, 1.75f),
+		new Lambertian({ 0.1f,0.2f,0.5f }));
 
-	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
+	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
+		new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 
-	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
+	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -4,1.5f,-1 }, 1.75f),
+		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
 	world->list[world->size - 1] = new IntersectionHit(
 		new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
@@ -134,13 +137,13 @@ int run(int threadIndex, ofstream& out)
 	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
 #pragma endregion
-	Vector3 lookFrom(-6.0f,2.9f, 3.8f);
-	Vector3 lookAt(0.0f, 0.5f, -1.0f);
+	Vector3 lookFrom(-12.0f,3.9f, 9.8f);
+	Vector3 lookAt(-0.2f, 1.0f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
 	float aperture = 0.1f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 30, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 25, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 	out << "第" << threadIndex << "次渲染准备\n";
