@@ -9,7 +9,13 @@ namespace ry
 
 		Ray() {}
 
-		Ray(const Vector3& a, const Vector3& b) { origin = a; direction = b; }
+		Ray(const Vector3& a, const Vector3& b)
+			: origin(a), direction(b), m_time(0.0f)
+		{}
+
+		Ray(const Vector3& a, const Vector3& b, const float& time)
+			: origin(a), direction(b), m_time(time)
+		{}
 
 		Vector3 Origin()const { return origin; }
 
@@ -17,8 +23,11 @@ namespace ry
 
 		Vector3 PointTo(const float& t)const { return origin + t * direction; }
 
+		float time() { return m_time; }
+
 		Vector3 origin;
 		Vector3 direction;
+		float m_time;
 	};
 }
 #endif

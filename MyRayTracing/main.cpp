@@ -14,6 +14,8 @@
 #include"Material.h"
 #include"Color.h"
 
+#include"IntersectionHit.h"
+
 #ifndef __linux__
 #include<Windows.h>
 #endif // !__linux__
@@ -58,28 +60,27 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
 
-HitList *randomScence()
+HitList *randomScence(int maxSize,int randomIndex)
 {
-	int n = 500;
-	Hitable** list = new Hitable * [n + 1];
-	list[0] = new Sphere(SdfSphere({ 0,-1000,0 }, 1000), new Lambertian({ 0.2f,0.9f,0.2f }));
+	Hitable** list = new Hitable * [maxSize + 1];
+	list[0] = new Sphere(SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian({ 0.3f,0.3f,0.3f }));
 	int i = 1;
-	for (int i = -11; i < 11; i++)
+	for (int x = -randomIndex; x < randomIndex; x++)
 	{
-		for (int j = -11; j < 11; j++)
+		for (int y = -randomIndex; y < randomIndex; y++)
 		{
 			float choose_mat = Drand48();
-			Vector3 center(i + 0.9f * Drand48(), 0.2f, j + 0.9f * Drand48());
+			Vector3 center(x + 0.9f * Drand48(), 0.2f, y + 0.9f * Drand48());
 			if ((center - Vector3(4.0f, 0.2f, 0.0f)).Magnitude() > 0.9f)
 			{
 				if (choose_mat < 0.8f)
 				{
-					list[i++] = new Sphere(SdfSphere(center, 0.2), new Lambertian(
+					list[i++] = new Sphere(SdfSphere(center, 0.2f), new Lambertian(
 						{ (float)Drand48() * (float)Drand48() ,
 						(float)Drand48() * (float)Drand48() ,
 						(float)Drand48() * (float)Drand48() }));
 				}
-				if (choose_mat < 0.95f)
+				else if (choose_mat < 0.95f)
 				{
 					list[i++] = new Sphere(SdfSphere(center, 0.2f), new Metal({
 						0.5f * (float)(1 + Drand48()),0.5f * (float)(1 + Drand48()) ,0.5f * (float)(1 + Drand48()) },
@@ -103,40 +104,43 @@ int run(int threadIndex, ofstream& out)
 	int nx = 512; //  宽
 	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int ns = 50; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 50;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 #pragma region worldInit
-	HitList* world = new HitList(4);
-	(*world).list[0] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
-	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Metal({ 1.0f,1.0f,1.0f }, 1.8f));
-	//world.list[0] = new Sphere({ 0,0.0f,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
 
-	(*world).list[1] = new Sphere(SdfSphere({ 0,-100.5f,-1 }, 100.0f), new Lambertian({ 0.8f,0.8f,0.0f }));
-	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Metal({ 0.5f,0.5f,0.5f }, 0.3f));
-	//world.list[1] = new Sphere({ 0,-100.5f,-5 }, 100.0f, new Dielectric({ 1,1,1 },1.4f));
+	//int hitableNum = 4;
+	//HitList* world = new HitList(hitableNum);
 
-	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Lambertian({ 0.8f,0.6f,0.2f }));
-	(*world).list[2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
-	//world.list[2] = new Sphere({ 1,0,-1 }, 0.5f, new Dielectric({ 1,1,1 }, 1.3f));
+	HitList* world = NULL;
+	int MaxWorldSize = 500;
+	world = randomScence(MaxWorldSize, 0);
+	(*world).size += 2;
+	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
 
-	//world.list[3] = new Sphere({ -1,0,-1 }, 0.5f, new Lambertian({ 0.7f,0.4f,0.9f }));
-	//world.list[3] = new Sphere({ -1.0f,0,-1 }, 0.5f, new Metal({ 0.8f,0.8f,0.8f }, 0.0f));
-	(*world).list[3] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 
-	//HitList* world = randomScence();
+	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
+	/*world->list[world->size - 1] = new IntersectionHit(
+		new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
+		new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f),
+		new Dielectric({ 1.0f,1.0f,1.0f },1.5f)
+	);*/
+
+	world->list[world->size - 2] = new Sphere(SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
 #pragma endregion
-	Vector3 lookFrom(-20,20, 10);
-	Vector3 lookAt(0, 0, -1);
+	Vector3 lookFrom(-6.0f,2.9f, 3.8f);
+	Vector3 lookAt(0.0f, 0.5f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
-	float aperture = 0.0f;
+	float aperture = 0.1f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 30, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 	out << "第" << threadIndex << "次渲染准备\n";
@@ -144,6 +148,7 @@ int run(int threadIndex, ofstream& out)
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
 	cout << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
+	out << "场景体数量:" << (*world).size << ", 光圈: " << aperture << ".\n";
 	if (nChannel > 4)
 	{
 		out << "颜色通道大于4, 退出.\n";
@@ -165,6 +170,7 @@ int run(int threadIndex, ofstream& out)
 	int threadNum = coreNum - 2;
 	int taskNum = threadNum * min(max(1, nx / 256), 20);
 	//int taskNum = threadNum * threadIndex;
+	out << "渲染模式: " << "多线程; ";
 	out << "任务数: " << taskNum << "\n"; cout << "任务数: " << taskNum << "\n";
 	cout << "准备开始渲染" << endl;
 	system("pause");
@@ -321,13 +327,28 @@ int run(int threadIndex, ofstream& out)
 		system("outImage.bmp");
 		free(imageData);
 
+		delete world;
+
 		return 0;
 }
 
 int main()
 {
 	Srand48((unsigned int)time(NULL));
+	ifstream testReader("renderLog.txt");
+	string oldLog((std::istreambuf_iterator<char>(testReader)),
+		std::istreambuf_iterator<char>());
+	testReader.close();
+
 	ofstream testOut("renderLog.txt");
+
+	testOut << oldLog;
+
+	time_t now = time(0);
+	char dt[30];
+	ctime_s(dt, sizeof dt, &now);
+	testOut << dt << "\n";
+	
 	testOut << "渲染日志: \n\n";
 	for (int i = 1; i <= 1; i++)
 	{

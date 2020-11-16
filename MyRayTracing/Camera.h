@@ -27,7 +27,7 @@ namespace ry
 			const float& fov, const float& aspect,
 			const float& aperture, const float& focus_dist)
 		{
-			lensRadius = aperture / 2;
+			lensRadius = aperture / 2.;
 			origin = lookFrom;
 			float theta = fov * Pi / 180;
 			float half_height = tan(theta / 2);

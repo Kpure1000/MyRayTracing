@@ -29,14 +29,7 @@ namespace ry
 			{
 				rec.mat = material;
 			}
-			float discriminant;
-			bool isHit = sdfSphere.sdf(r, tMin, tMax, discriminant, rec.t);
-			if (discriminant > 0)
-			{
-				rec.hitPoint = r.PointTo(rec.t);
-				rec.normal = (rec.hitPoint - sdfSphere.center) / sdfSphere.radius;
-			}
-			return isHit;
+			return sdfSphere.Hit(r, tMin, tMax, rec);
 		}
 
 		SdfSphere sdfSphere;

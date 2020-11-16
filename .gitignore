@@ -5,5 +5,8 @@
 *.vs
 */Debug/
 */Release/
+Debug/
+Release/
 
 */x64/
+x64/

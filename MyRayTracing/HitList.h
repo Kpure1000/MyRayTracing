@@ -19,7 +19,7 @@ namespace ry
 
 		~HitList()
 		{
-			if (list)
+			if (list != nullptr)
 			{
 				free(list);
 			}
