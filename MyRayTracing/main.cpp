@@ -117,21 +117,21 @@ int run(int threadIndex, ofstream& out)
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
 	world = randomScence(MaxWorldSize, 0);
-	(*world).size += 2;
+	(*world).size += 1;
 	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,0,-1 }, 0.5f), new Lambertian({ 0.1f,0.2f,0.5f }));
 
 	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 1.0f,0,-1 }, 0.5f), new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 
 	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -1,0,-1 }, 0.5f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
-	/*world->list[world->size - 1] = new IntersectionHit(
+	world->list[world->size - 1] = new IntersectionHit(
 		new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
 		new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f),
 		new Dielectric({ 1.0f,1.0f,1.0f },1.5f)
-	);*/
+	);
 
-	world->list[world->size - 2] = new Sphere(SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
-	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	/*world->list[world->size - 2] = new Sphere(SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
 #pragma endregion
 	Vector3 lookFrom(-6.0f,2.9f, 3.8f);
