@@ -96,10 +96,6 @@ void Srand48(unsigned int i)
 	seed = (((long long int)i) << 16) | rand();
 }
 
-#ifndef SRAND(i)
-#define SRAND(i) 
-#endif // !SRAND(i)
-
 
 #endif // !RAYMATH_H
 
