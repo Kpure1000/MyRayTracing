@@ -35,24 +35,6 @@ Vector3 Reflect(const Vector3& in, const Vector3& normal)
 */
 bool Refract(const Vector3& in, const Vector3& normal, const float& refRate, Vector3& refracted)
 {
-	//float dot_in_n = Vector3::Dot(in, normal);
-	//if (refRate <= 1) //  从光疏介质到光密介质
-	//{
-	//	refracted = in * refRate + normal * dot_in_n * (1 + refRate);
-	//	return true;
-	//}
-	//else //  从光密介质到光疏介质
-	//{
-	//	float re_refRate = 1.0f / refRate;
-	//	float consine_in = dot_in_n / in.Magnitude();
-	//	float sinsine_in_sq = 1 - consine_in * consine_in;
-	//	if (sinsine_in_sq <= re_refRate * re_refRate) //  未到全内反射角
-	//	{
-	//		refracted = in * refRate + normal * dot_in_n * (1 + refRate);
-	//		return true;
-	//	}
-	//}
-	//return false;
 	Vector3 uvin = Vector3::Normalize(in);
 	float dt = Vector3::Dot(uvin, normal);
 	float discrimination = 1 - refRate * refRate * (1 - dt * dt);

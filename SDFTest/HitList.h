@@ -1,47 +1,57 @@
 #pragma once
-#include "Hitable.h"
-class HitList :
-    public Hitable
+#include"Hitable.h"
+namespace ry
 {
-public:
-
-	HitList() {}
-
-	HitList(int listSize) : size(listSize)
+	class HitList : public Hitable
 	{
-		list = (Hitable**)malloc(sizeof(Hitable*) * size);
-	}
+	public:
 
-	HitList(Hitable** List, int listSize) :list(List), size(listSize)
-	{}
+		HitList() {}
 
-	~HitList()
-	{
-		if (list != nullptr)
+		HitList(int listSize) : size(listSize)
 		{
-			free(list);
+			list = (Hitable**)malloc(sizeof(Hitable*) * size);
 		}
-	}
 
-	virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
-	{
-		HitRecord recTmp;
-		bool isHited = false;
-		float closet_so_far = tMax;
-		for (size_t i = 0; i < size; i++)
+		HitList(Hitable** List, int listSize) :list(List), size(listSize)
+		{}
+
+		~HitList()
 		{
-			if (list[i]->Hit(r, tMin, closet_so_far, recTmp))
+			if (list != nullptr)
 			{
-				isHited = true;
-				rec = recTmp;
-				closet_so_far = rec.t; // 被Hitable挡住,更新射线最远点
+				free(list);
 			}
 		}
-		return isHited;
-	}
 
-	Hitable** list;
-	int size;
+		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
+		{
+			HitRecord recTmp;
+			bool isHited = false;
+			float closet_so_far = tMax;
+			for (size_t i = 0; i < size; i++)
+			{
+				if (list[i]->Hit(r, tMin, closet_so_far, recTmp))
+				{
+					isHited = true;
+					rec = recTmp;
+					closet_so_far = rec.t; // 被Hitable挡住,更新射线最远点
+				}
+			}
+			return isHited;
+		}
 
-};
+		Hitable** list;
+		int size;
 
+	private:
+
+		virtual void draw(RenderTarget& target, RenderStates states)const
+		{
+			for (size_t i = 0; i < size; i++)
+			{
+				target.draw(*list[i], states);
+			}
+		}
+	};
+}

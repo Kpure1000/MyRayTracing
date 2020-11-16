@@ -18,6 +18,9 @@
     <ClCompile Include="test_main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="RayMath.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Sdf.h">
@@ -39,6 +42,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="HitList.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MyCircle.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,9 @@
 #include<SFML/Graphics.hpp>
 #include<iostream>
-
+#include"RayLauncher.h"
+#include"Material.h"
+#include"Sphere.h"
+using namespace ry;
 using namespace std;
 
 #define CannotResize  (sf::Style::Titlebar |  sf::Style::Close)
@@ -12,10 +15,25 @@ int main()
 {
 	unsigned int width = 1024, height = 768;
 
-	std::cout << "¹â×·2D²âÊÔ\n\n";
+	std::cout << "SDF test in ray tracing, 2D, with SFML.\nstart.\n\n";
 
-	sf::RenderWindow App(sf::VideoMode(width, height),
-		"RayTracingTest", sf::Style::Close | sf::Style::Titlebar);
+	sf::RenderWindow App(sf::VideoMode(width, height), "RayTracingTest",
+		sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
+
+	
+
+	HitList* world = new HitList(5);
+
+	/*world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Dielectric({ 1,1 },1.5));
+	world->list[1] = new Sphere(SdfSphere({ 330,420 }, 200), new Dielectric({ 1,1 },1.5));*/
+
+	world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Metal());
+	world->list[1] = new Sphere(SdfSphere({ 330,420 }, 200), new Simple());
+	world->list[2] = new Sphere(SdfSphere({ 630,520 }, 100), new Dielectric(1.5));
+	world->list[3] = new Sphere(SdfSphere({ 430,420 }, 120), new Dielectric(1.3f));
+	world->list[4] = new Sphere(SdfSphere({ 730,620 }, 90), new Metal());
+
+	RayLauncher rayLauncher({ 10,10 }, { 10,100 }, world,20);
 
 	while (App.isOpen())
 	{
@@ -28,9 +46,14 @@ int main()
 			}
 		}
 
+		rayLauncher.Update((Vector2f)Mouse::getPosition(App));
+
 		App.clear(sf::Color(40, 40, 40, 255));
 		
 		//render
+		App.draw(*world);
+
+		App.draw(rayLauncher);
 
 		App.display();
 	}
