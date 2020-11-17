@@ -12,13 +12,13 @@ namespace ry
 
 		Sphere() {}
 
-		Sphere(SdfSphere sphere)
-			: sdfSphere(sphere)
+		Sphere(SdfSphere* sphere)
+			: Hitable(sphere)
 		{
 		}
 
-		Sphere(SdfSphere sphere, Material* mat)
-			: sdfSphere(sphere), Hitable(mat)
+		Sphere(SdfSphere* sphere, Material* mat)
+			: Hitable(sphere, mat)
 		{
 		}
 
@@ -29,10 +29,13 @@ namespace ry
 			{
 				rec.mat = material;
 			}
-			return sdfSphere.Hit(r, tMin, tMax, rec);
+			return sdf->Hit(r, tMin, tMax, rec);
 		}
 
-		SdfSphere sdfSphere;
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
+		}
 
 	};
 

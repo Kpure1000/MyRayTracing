@@ -7,7 +7,7 @@ namespace ry
 	{
 	public:
 
-		HitList() {}
+		HitList() : list(NULL), size(0) {}
 
 		HitList(int listSize) : size(listSize)
 		{
@@ -40,6 +40,11 @@ namespace ry
 				}
 			}
 			return isHited;
+		}
+
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
 		}
 
 		Hitable** list;

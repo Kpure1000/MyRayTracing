@@ -6,15 +6,13 @@ using namespace sdf;
 
 namespace ry
 {
-
-	class IntersectionHit :
-		public Hitable
+	class IntersectionHit : public Hitable
 	{
 	public:
-		IntersectionHit(Sdf* a, Sdf* b, Material* mat)
-			: sdfA(a), sdfB(b),
-			sdf(a, b),
-			Hitable(mat)
+
+		IntersectionHit(Hitable* a, Hitable* b, Material* mat)
+			:Hitable(new SdfIntersection(a->sdf, b->sdf), mat),
+			hA(a), hB(b)
 		{}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
@@ -24,16 +22,16 @@ namespace ry
 			{
 				rec.mat = material;
 			}
-			return sdf.Hit(r, tMin, tMax, rec);
+			return sdf->Hit(r, tMin, tMax, rec);
+		}
+		
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
 		}
 
-		SdfIntersection sdf;
+		Hitable* hA, * hB;
 
-		Sdf* sdfA;
-		Sdf* sdfB;
-
-		/*Material* matA;
-		Material* matB;*/
 	};
 }
 #endif // !INTERSECTIONHIT_H

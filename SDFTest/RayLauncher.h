@@ -28,8 +28,13 @@ namespace ry
 
 		Vector2f origin;
 
-		void Update(Vector2f mousePosition)
+		void Update(const Vector2f& mousePosition, const bool& isPress)
 		{
+			if (isPress)
+			{
+				ray.origin = mousePosition;
+				verts[0].position = mousePosition;
+			}
 			Vector2f newDir = mousePosition - ray.origin;
 
 			Ray newRay = ray;

@@ -98,14 +98,14 @@ namespace ry
 				cosine = -Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
 
-			/*if (isRefracted)
+			if (isRefracted)
 			{
 				if (Drand48() <= Schlick(cosine, refractive_Indices))
 				{
 					isRefracted = false;
 				}
 
-			}*/
+			}
 
 			// ÅÐ¶ÏÊÇ·ñÈ«·´Éä
 			scattered = Ray(rec.hitPoint, isRefracted == true ? refracted : reflected);

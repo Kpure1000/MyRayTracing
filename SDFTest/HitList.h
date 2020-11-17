@@ -6,7 +6,7 @@ namespace ry
 	{
 	public:
 
-		HitList() {}
+		HitList() : list(NULL),size(0) {}
 
 		HitList(int listSize) : size(listSize)
 		{

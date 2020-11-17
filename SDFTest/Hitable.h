@@ -22,9 +22,13 @@ namespace ry
 	class Hitable : public Drawable
 	{
 	public:
-		Hitable() {}
-		Hitable(sdf::Sdf* sdf):sdf(sdf) {}
-		Hitable(Material* mat) :material(mat) {}
+		
+		Hitable() :sdf(NULL), material(NULL) {}
+		
+		Hitable(sdf::Sdf* sdf) :sdf(sdf), material(NULL) {}
+		
+		Hitable(Material* mat) :sdf(NULL), material(mat) {}
+
 		Hitable(sdf::Sdf* sdf, Material* mat) :sdf(sdf), material(mat) {}
 
 		//返回射线碰撞数据record,射线被约束在tMin和tMax之间
@@ -39,8 +43,8 @@ namespace ry
 
 	};
 
-	
 
-	
+
+
 
 }

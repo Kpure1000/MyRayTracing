@@ -28,7 +28,6 @@ namespace ry
 			{
 				rec.mat = material;
 			}
-			std::cout << "sd\n";
 			return sdf->Hit(r, tMin, tMax, rec);
 		}
 

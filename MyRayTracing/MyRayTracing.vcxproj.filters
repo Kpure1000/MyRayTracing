@@ -13,6 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="头文件\util">
+      <UniqueIdentifier>{9f710d3a-ca7e-4a0b-a1f6-9bacb4b1fd8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\hit">
+      <UniqueIdentifier>{6f3aa374-8c05-45e9-80f9-3953c8bf38c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\render">
+      <UniqueIdentifier>{3568ba41-4943-4a94-9522-dce6f0639086}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\sdf">
+      <UniqueIdentifier>{cbabef5f-9895-40a3-9b05-2de080163455}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\thread">
+      <UniqueIdentifier>{89969cbf-f749-4c6c-a032-c2b1356969ed}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,49 +42,49 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Vector3.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Ray.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Hitable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="HitList.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RayMath.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\util</Filter>
     </ClInclude>
     <ClInclude Include="Color.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\util</Filter>
     </ClInclude>
-    <ClInclude Include="Light.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="Hitable.h">
+      <Filter>头文件\hit</Filter>
     </ClInclude>
-    <ClInclude Include="Sdf.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="ThreadPool.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="NoCopyAble.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="UnionHit.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="HitList.h">
+      <Filter>头文件\hit</Filter>
     </ClInclude>
     <ClInclude Include="IntersectionHit.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="UnionHit.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="RayMath.h">
+      <Filter>头文件\util</Filter>
+    </ClInclude>
+    <ClInclude Include="Sdf.h">
+      <Filter>头文件\sdf</Filter>
+    </ClInclude>
+    <ClInclude Include="ThreadPool.h">
+      <Filter>头文件\thread</Filter>
+    </ClInclude>
+    <ClInclude Include="NoCopyAble.h">
+      <Filter>头文件\thread</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
