@@ -5,6 +5,15 @@ using namespace ry;
 
 namespace sdf
 {
+	/*碰撞距离场记录*/
+	enum class SdfRecord
+	{
+		FLASE,
+		TRUE,
+		A,
+		B
+	};
+
 	/*
 	* 有符号距离场
 	* 表示0亏格单个面组成的体（球、长方体等）
@@ -13,7 +22,7 @@ namespace sdf
 	{
 	public:
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const = 0;
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const = 0;
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const = 0;
 	};
@@ -27,7 +36,7 @@ namespace sdf
 			: center(Center), radius(Radius) {}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
 		{
 			Vector3 o2c = r.Origin() - center;
 			float a = Vector3::Dot(r.Direction(), r.Direction());
@@ -82,14 +91,14 @@ namespace sdf
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
 		{
 			float disA, disB; //  距离
 			HitRecord resA = result, resB = result; //  碰撞结果
 			bool isHitA, isHitB; //  是否碰撞
 			float discriminant;
-			isHitA = sdfA->Hit(r, tMin, tMax, resA);
-			isHitB = sdfB->Hit(r, tMin, tMax, resB);
+			isHitA = sdfA->Hit(r, tMin, tMax, resA, sdfRec);
+			isHitB = sdfB->Hit(r, tMin, tMax, resB, sdfRec);
 			float sdfResult;
 			if (isHitA || isHitB)
 			{
@@ -98,13 +107,16 @@ namespace sdf
 					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
 					{
 						result = resA;
+						sdfRec = SdfRecord::A;
 						return isHitA;
 					}
 					else if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
 					{
 						result = resB;
+						sdfRec = SdfRecord::B;
 						return isHitB;
 					}
+					sdfRec = SdfRecord::FLASE;
 					return false; //  none in
 				}
 				else
@@ -112,16 +124,20 @@ namespace sdf
 					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
 					{
 						result = resB;
+						sdfRec = SdfRecord::B;
 						return isHitB;
 					}
 					else if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
 					{
 						result = resA;
+						sdfRec = SdfRecord::A;
 						return isHitA;
 					}
+					sdfRec = SdfRecord::FLASE;
 					return false; //  none in
 				}
 			}
+			sdfRec = SdfRecord::FLASE;
 			return false;
 		}
 
@@ -147,7 +163,7 @@ namespace sdf
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
 		{
 			return true;
 		}

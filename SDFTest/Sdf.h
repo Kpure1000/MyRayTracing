@@ -5,7 +5,7 @@ using namespace ry;
 
 namespace sdf
 {
-
+	/*Åö×²¾àÀë³¡¼ÇÂ¼*/
 	enum class SdfRecord
 	{
 		FLASE,
@@ -18,7 +18,7 @@ namespace sdf
 	{
 	public:
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result,SdfRecord& sdfRec)const = 0;
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const = 0;
 
 		virtual bool sdf(const Vector2f& p, float& sdfResult)const = 0;
 

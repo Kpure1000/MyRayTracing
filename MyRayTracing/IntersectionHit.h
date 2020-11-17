@@ -18,11 +18,21 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
 		{
-			if (material != nullptr)
+			SdfRecord sdfR;
+			auto result = sdf->Hit(r, tMin, tMax, rec, sdfR);
+			if (sdfR == SdfRecord::A)
 			{
-				rec.mat = material;
+				if (hA->material)rec.mat = hA->material;
 			}
-			return sdf->Hit(r, tMin, tMax, rec);
+			else if (sdfR == SdfRecord::B)
+			{
+				if (hB->material)rec.mat = hB->material;
+			}
+			else
+			{
+				if (material)rec.mat = material;
+			}
+			return result;
 		}
 		
 		virtual void SetMaterial(Material* mat)

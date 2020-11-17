@@ -32,8 +32,8 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 HitList* randomScence(int maxSize, int randomIndex)
 {
 	Hitable** list = new Hitable * [maxSize + 1];
-	list[0] = new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian({ 0.3f,0.3f,0.3f }));
-	int i = 1;
+	
+	int i = 0;
 	for (int x = -randomIndex; x < randomIndex; x++)
 	{
 		for (int y = -randomIndex; y < randomIndex; y++)
@@ -85,27 +85,31 @@ int run(int threadIndex, ofstream& out)
 
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
-	world = randomScence(MaxWorldSize, 0);
-	(*world).size += 1;
-	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,1.5f,-1 }, 1.75f),
+	int objNumSq = 11;
+	world = randomScence(MaxWorldSize, objNumSq);
+	world->size += 1;
+	world->list[world->size-1] = new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian({ 0.3f,0.3f,0.3f }));
+	world->size += 3;
+	world->list[(*world).size - 3] = new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
 		new Lambertian({ 0.1f,0.2f,0.5f }));
 
-	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
+	world->list[(*world).size - 2] = new Sphere(new SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
 		new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 
-	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -4,1.5f,-1 }, 1.75f),
-		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
+	world->list[(*world).size - 1] = new Sphere(new SdfSphere({ -4,1.5f,-1 }, 1.75f),
+		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 
-	world->list[world->size - 1] = new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)),
-		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f),new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)),
+	/*world->list[world->size - 1] = new IntersectionHit(
+		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f)),
+		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Metal({ 0.8f,0.8f,0.8f }, 0.2f)),
 		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)
-	);
+	);*/
 
-	/*world->list[world->size - 2] = new Sphere(SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
-	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
+	/*world->list[world->size - 2] = new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f));
+	world->list[world->size - 1] = new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f));*/
 
 #pragma endregion
+
 	Vector3 lookFrom(-12.0f, 3.9f, 9.8f);
 	Vector3 lookAt(-0.2f, 1.0f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
