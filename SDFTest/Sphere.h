@@ -28,7 +28,8 @@ namespace ry
 			{
 				rec.mat = material;
 			}
-			return sdf->Hit(r, tMin, tMax, rec);
+			SdfRecord sdfR;
+			return sdf->Hit(r, tMin, tMax, rec, sdfR);
 		}
 
 		virtual void SetMaterial(Material* mat)

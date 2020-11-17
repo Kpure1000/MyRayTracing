@@ -36,8 +36,8 @@ int main()
 	world->list[3] = new Sphere(SdfSphere({ 430,420 }, 120), new Dielectric(2.3f));
 	world->list[4] = new Sphere(SdfSphere({ 730,620 }, 90), new Metal());*/
 
-	world->list[0] = new InterHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230)),
-		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230)), new Dielectric(1.9f));
+	world->list[0] = new InterHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
+		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Metal()), new Dielectric(1.9f));
 	//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
 #pragma endregion
 

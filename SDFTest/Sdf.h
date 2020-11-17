@@ -5,11 +5,20 @@ using namespace ry;
 
 namespace sdf
 {
+
+	enum class SdfRecord
+	{
+		FLASE,
+		TRUE,
+		A,
+		B
+	};
+
 	class Sdf
 	{
 	public:
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const = 0;
+			const float& tMax, HitRecord& result,SdfRecord& sdfRec)const = 0;
 
 		virtual bool sdf(const Vector2f& p, float& sdfResult)const = 0;
 
@@ -25,7 +34,7 @@ namespace sdf
 			: center(Center), radius(Radius) {}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
+			const float& tMax, HitRecord& rec, SdfRecord& sdfRec)const
 		{
 			Vector2f o2c = r.Origin() - center;
 			float a = Dot(r.Direction(), r.Direction());
@@ -77,14 +86,14 @@ namespace sdf
 		{}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result)const
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
 		{
 			//float disA, disB; //  ¾àÀë
 			HitRecord resA = result, resB = result; //  Åö×²½á¹û
 			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
 			float discriminant;
-			isHitA = sdfA->Hit(r, tMin, tMax, resA);
-			isHitB = sdfB->Hit(r, tMin, tMax, resB);
+			isHitA = sdfA->Hit(r, tMin, tMax, resA, sdfRec);
+			isHitB = sdfB->Hit(r, tMin, tMax, resB, sdfRec);
 			float sdfResult;
 			if (isHitA || isHitB)
 			{
@@ -93,13 +102,16 @@ namespace sdf
 					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
 					{
 						result = resA;
+						sdfRec = SdfRecord::A;
 						return isHitA;
 					}
 					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
 					{
 						result = resB;
+						sdfRec = SdfRecord::B;
 						return isHitB;
 					}
+					sdfRec = SdfRecord::FLASE;
 					return false; //  none in
 				}
 				else
@@ -107,16 +119,20 @@ namespace sdf
 					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
 					{
 						result = resB;
+						sdfRec = SdfRecord::B;
 						return isHitB;
 					}
 					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
 					{
 						result = resA;
+						sdfRec = SdfRecord::A;
 						return isHitA;
 					}
+					sdfRec = SdfRecord::FLASE;
 					return false; //  none in
 				}
 			}
+			sdfRec = SdfRecord::FLASE;
 			return false;
 		}
 
