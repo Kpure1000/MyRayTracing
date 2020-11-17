@@ -101,10 +101,10 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 1024; //  宽
-	int ny = 768; //  高
+	int nx = 400; //  宽
+	int ny = 200; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 500; //  抗锯齿(蒙特卡洛采样)
+	int ns = 20; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
@@ -116,22 +116,22 @@ int run(int threadIndex, ofstream& out)
 
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
-	world = randomScence(MaxWorldSize, 10);
-	(*world).size += 3;
-	(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,1.5f,-1 }, 1.75f),
+	world = randomScence(MaxWorldSize, 0);
+	(*world).size += 1;
+	/*(*world).list[(*world).size - 3] = new Sphere(SdfSphere({ 0,1.5f,-1 }, 1.75f),
 		new Lambertian({ 0.1f,0.2f,0.5f }));
 
 	(*world).list[(*world).size - 2] = new Sphere(SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
 		new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
 
 	(*world).list[(*world).size - 1] = new Sphere(SdfSphere({ -4,1.5f,-1 }, 1.75f),
-		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/
 
-	/*world->list[world->size - 1] = new IntersectionHit(
+	world->list[world->size - 1] = new IntersectionHit(
 		new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
 		new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f),
 		new Dielectric({ 1.0f,1.0f,1.0f },1.5f)
-	);*/
+	);
 
 	/*world->list[world->size - 2] = new Sphere(SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
 	world->list[world->size - 1] = new Sphere(SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));*/

@@ -98,61 +98,19 @@ namespace ry
 				cosine = -Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
 
-			if (isRefracted)
+			/*if (isRefracted)
 			{
 				if (Drand48() <= Schlick(cosine, refractive_Indices))
-				//if (rand() % 100 / (float)100 <= Schlick(cosine, refractive_Indices))
 				{
 					isRefracted = false;
 				}
 
-			}
+			}*/
 
 			// 判断是否全反射
 			scattered = Ray(rec.hitPoint, isRefracted == true ? refracted : reflected);
 			
 			return true;
-
-			//下面是书上的实现
-			/*Vector3 outward_normal;
-			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
-			float ni_over_nt;
-			attenuation = albedo;
-			Vector3 refracted;
-			float reflect_prob;
-			float cosine;
-			if (Vector3::Dot(rayIn.Direction(), rec.normal) > 0)
-			{
-				outward_normal = -rec.normal;
-				ni_over_nt = refractive_Indices;
-				cosine = refractive_Indices * Vector3::Dot(rayIn.Direction(), rec.normal) 
-					/ rayIn.Direction().Magnitude();
-			}
-			else
-			{
-				outward_normal = rec.normal;
-				ni_over_nt = 1.0f / refractive_Indices;
-				cosine = -Vector3::Dot(rayIn.Direction(), rec.normal)
-					/ rayIn.Direction().Magnitude();
-			}
-			if (Refract(rayIn.Direction(), outward_normal, ni_over_nt, refracted))
-			{
-				reflect_prob = Schlick(cosine, refractive_Indices);
-			}
-			else
-			{
-				scattered = Ray(rec.hitPoint, reflected);
-				reflect_prob = 1.0f;
-			}
-			if (rand() % 100 / float(100) < reflect_prob)
-			{
-				scattered = Ray(rec.hitPoint, reflected);
-			}
-			else
-			{
-				scattered = Ray(rec.hitPoint, refracted);
-			}
-			return true;*/
 		}
 
 		//反射率

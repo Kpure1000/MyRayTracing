@@ -50,5 +50,8 @@
     <ClInclude Include="MyCircle.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="InterHit.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

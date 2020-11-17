@@ -24,7 +24,7 @@ namespace ry
 			}
 		}
 
-		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
+		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)
 		{
 			HitRecord recTmp;
 			bool isHited = false;
@@ -39,6 +39,11 @@ namespace ry
 				}
 			}
 			return isHited;
+		}
+
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
 		}
 
 		Hitable** list;

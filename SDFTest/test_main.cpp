@@ -2,8 +2,11 @@
 #include<iostream>
 #include"RayLauncher.h"
 #include"Material.h"
+#include"Sdf.h"
 #include"Sphere.h"
+#include"InterHit.h"
 using namespace ry;
+using namespace sdf;
 using namespace std;
 
 #define CannotResize  (sf::Style::Titlebar |  sf::Style::Close)
@@ -22,18 +25,23 @@ int main()
 
 	
 
-	HitList* world = new HitList(5);
+	HitList* world = new HitList(1);
 
-	/*world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Dielectric({ 1,1 },1.5));
-	world->list[1] = new Sphere(SdfSphere({ 330,420 }, 200), new Dielectric({ 1,1 },1.5));*/
+	/*world->list[0] = new Sphere(SdfSphere({ 300,300 }, 160), new Dielectric(1.3));
+	world->list[1] = new Sphere(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));*/
 
-	world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Metal());
+
+	/*world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Metal());
 	world->list[1] = new Sphere(SdfSphere({ 330,420 }, 200), new Simple());
-	world->list[2] = new Sphere(SdfSphere({ 630,520 }, 100), new Dielectric(1.5));
-	world->list[3] = new Sphere(SdfSphere({ 430,420 }, 120), new Dielectric(1.3f));
-	world->list[4] = new Sphere(SdfSphere({ 730,620 }, 90), new Metal());
+	world->list[2] = new Sphere(SdfSphere({ 630,520 }, 100), new Dielectric(2.0f));
+	world->list[3] = new Sphere(SdfSphere({ 430,420 }, 120), new Dielectric(2.3f));
+	world->list[4] = new Sphere(SdfSphere({ 730,620 }, 90), new Metal());*/
 
-	RayLauncher rayLauncher({ 10,10 }, { 10,100 }, world,20);
+	world->list[0] = new InterHit(new Sphere(new SdfSphere({ 300,300 }, 160)),
+		new Sphere(new SdfSphere({ 420,420 }, 200)), new Dielectric(1.3f));
+	//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
+
+	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world,20);
 
 	while (App.isOpen())
 	{

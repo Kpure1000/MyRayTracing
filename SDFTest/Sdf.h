@@ -55,15 +55,81 @@ namespace sdf
 		virtual bool sdf(const Vector2f& p, float& sdfResult)const
 		{
 			sdfResult = Distance(p, center);
-			if (sdfResult <= radius + 1e-3f)
+			if (sdfResult <= radius + 1e-2f)
 			{
 				return true;
 			}
+			return false;
 		}
 
 		Vector2f center;
 
 		float radius;
+	};
+
+	class SdfIntersection : public Sdf
+	{
+	public:
+		SdfIntersection() {}
+
+		SdfIntersection(Sdf* A, Sdf* B)
+			:sdfA(A), sdfB(B)
+		{}
+
+		virtual bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& result)const
+		{
+			//float disA, disB; //  ¾àÀë
+			HitRecord resA = result, resB = result; //  Åö×²½á¹û
+			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
+			float discriminant;
+			isHitA = sdfA->Hit(r, tMin, tMax, resA);
+			isHitB = sdfB->Hit(r, tMin, tMax, resB);
+			float sdfResult;
+			if (isHitA || isHitB)
+			{
+				if (resA.t < resB.t)
+				{
+					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
+					{
+						result = resA;
+						return isHitA;
+					}
+					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
+					{
+						result = resB;
+						return isHitB;
+					}
+					return false; //  none in
+				}
+				else
+				{
+					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
+					{
+						result = resB;
+						return isHitB;
+					}
+					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
+					{
+						result = resA;
+						return isHitA;
+					}
+					return false; //  none in
+				}
+			}
+			return false;
+		}
+
+
+		virtual bool sdf(const Vector2f& p, float& sdfResult)const
+		{
+			return sdfA->sdf(p, sdfResult)
+				&& sdfB->sdf(p, sdfResult);
+		}
+
+		Sdf* sdfA;
+		Sdf* sdfB;
+
 	};
 }
 

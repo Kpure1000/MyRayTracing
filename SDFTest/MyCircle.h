@@ -25,11 +25,21 @@ public:
 		}
 		verts[printCount - 1] = verts[0];
 	}
+
 	~MyCircle()
 	{
 		if (verts)
 			delete verts;
 	}
+
+	void SetColor(Color c)
+	{
+		for (size_t i = 0; i < printCount; i++)
+		{
+			verts[i].color = c;
+		}
+	}
+
 	int printCount;
 	float radius;
 	Vector2f position;

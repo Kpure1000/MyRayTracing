@@ -58,7 +58,7 @@ void Srand48(unsigned int i)
 
 float Distance(Vector2f const& a, Vector2f const& b)
 {
-	return sqrtf((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+	return sqrt((a.x-b.x) * (a.x-b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
 float Magnitude(Vector2f const& v)

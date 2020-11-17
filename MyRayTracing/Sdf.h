@@ -60,7 +60,7 @@ namespace sdf
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
 			sdfResult = Vector3::Distance(p, center);
-			if (sdfResult <= radius + 1e-3f)
+			if (sdfResult <= radius + 1e-2f)
 			{
 				return true;
 			}
@@ -91,43 +91,45 @@ namespace sdf
 			isHitA = sdfA->Hit(r, tMin, tMax, resA);
 			isHitB = sdfB->Hit(r, tMin, tMax, resB);
 			float sdfResult;
-			if (resA.t < resB.t)
+			if (isHitA || isHitB)
 			{
-				if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
+				if (resA.t < resB.t)
 				{
-					result = resA;
-					return isHitA;
+					if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
+					{
+						result = resA;
+						return isHitA;
+					}
+					else if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
+					{
+						result = resB;
+						return isHitB;
+					}
+					return false; //  none in
 				}
-				else if(this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
+				else
 				{
-					result = resB;
-					return isHitB;
+					if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
+					{
+						result = resB;
+						return isHitB;
+					}
+					else if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
+					{
+						result = resA;
+						return isHitA;
+					}
+					return false; //  none in
 				}
-				
-				return false; //  none in
 			}
-			else
-			{
-				if (this->sdf(r.PointTo(resB.t), sdfResult))//HitB in
-				{
-					result = resB;
-					return isHitB;
-				}
-				else if (this->sdf(r.PointTo(resA.t), sdfResult))//HitA in
-				{
-					result = resA;
-					return isHitA;
-				}
-				return false; //  none in
-			}
+			return false;
 		}
 
 		/*相交区域的*/
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
-			bool isIn = sdfA->sdf(p, sdfResult)
+			return sdfA->sdf(p, sdfResult)
 				&& sdfB->sdf(p, sdfResult);
-			return isIn;
 		}
 
 		Sdf* sdfA;

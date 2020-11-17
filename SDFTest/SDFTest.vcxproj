@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />
+    <ClInclude Include="InterHit.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MyCircle.h" />
     <ClInclude Include="Ray.h" />

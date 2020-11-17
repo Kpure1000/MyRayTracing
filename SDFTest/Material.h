@@ -75,16 +75,13 @@ namespace ry
 			if (isRefracted)
 			{
 				if (Drand48() <= Schlick(cosine, refractive_Indices))
-					//if (rand() % 100 / (float)100 <= Schlick(cosine, refractive_Indices))
 				{
 					isRefracted = false;
 				}
-
 			}
 
 			// ÅÐ¶ÏÊÇ·ñÈ«·´Éä
-			//scattered = Ray(rec.hitPoint, isRefracted == true ? refracted : reflected);
-			scattered = Ray(rec.hitPoint, refracted);
+			scattered = Ray(rec.hitPoint, isRefracted == true ? refracted : reflected);
 			return true;
 		}
 

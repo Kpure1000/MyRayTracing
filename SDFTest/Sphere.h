@@ -10,28 +10,33 @@ namespace ry
 	public:
 		Sphere() {}
 
-		Sphere(SdfSphere sphere)
-			: sdfSphere(sphere), circle(sphere.radius, sphere.center,Color::White)
+		Sphere(SdfSphere* sphere)
+			: Hitable(sphere), circle(sphere->radius, sphere->center,Color::White)
 		{
 		}
 
-		Sphere(SdfSphere sphere, Material* mat)
-			: sdfSphere(sphere), Hitable(mat),
-			circle(sphere.radius, sphere.center, mat->color)
+		Sphere(SdfSphere* sphere, Material* mat)
+			: Hitable(sphere,mat),
+			circle(sphere->radius, sphere->center, mat->color)
 		{
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
+			const float& tMax, HitRecord& rec)
 		{
 			if (material != nullptr)
 			{
 				rec.mat = material;
 			}
-			return sdfSphere.Hit(r, tMin, tMax, rec);
+			std::cout << "sd\n";
+			return sdf->Hit(r, tMin, tMax, rec);
 		}
 
-		SdfSphere sdfSphere;
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
+			circle.SetColor(material->color);
+		}
 
 		MyCircle circle;
 
