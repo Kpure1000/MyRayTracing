@@ -24,20 +24,22 @@ int main()
 		sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 
 #pragma region worldInit
-	HitList* world = new HitList(1);
+	HitList* world = new HitList(6);
 
 	/*world->list[0] = new Sphere(SdfSphere({ 300,300 }, 160), new Dielectric(1.3));
 	world->list[1] = new Sphere(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));*/
 
 
-	/*world->list[0] = new Sphere(SdfSphere({ 600,200 }, 160), new Metal());
-	world->list[1] = new Sphere(SdfSphere({ 330,420 }, 200), new Simple());
-	world->list[2] = new Sphere(SdfSphere({ 630,520 }, 100), new Dielectric(2.0f));
-	world->list[3] = new Sphere(SdfSphere({ 430,420 }, 120), new Dielectric(2.3f));
-	world->list[4] = new Sphere(SdfSphere({ 730,620 }, 90), new Metal());*/
+	world->list[0] = new Sphere(new SdfSphere({ 600,200 }, 60), new Metal());
+	world->list[1] = new Sphere(new SdfSphere({ 330,420 }, 50), new Simple());
+	world->list[2] = new Sphere(new SdfSphere({ 630,520 }, 90), new Dielectric(1.1f));
+	world->list[3] = new Sphere(new SdfSphere({ 430,420 }, 40), new Dielectric(1.3f));
+	world->list[4] = new Sphere(new SdfSphere({ 730,620 }, 70), new Metal());
 
-	world->list[0] = new InterHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
+	world->list[5] = new InterHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
 		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));
+
+
 	//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
 #pragma endregion
 

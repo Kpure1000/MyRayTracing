@@ -20,11 +20,11 @@ namespace ry
 		{
 			SdfRecord sdfR;
 			auto result = sdf->Hit(r, tMin, tMax, rec, sdfR);
-			if (sdfR == SdfRecord::A)
+			if (result && sdfR == SdfRecord::A)
 			{
 				if (hA->material)rec.mat = hA->material;
 			}
-			else if (sdfR == SdfRecord::B)
+			else if (result && sdfR == SdfRecord::B)
 			{
 				if (hB->material)rec.mat = hB->material;
 			}

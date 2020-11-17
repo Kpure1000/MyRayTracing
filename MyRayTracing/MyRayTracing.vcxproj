@@ -155,6 +155,7 @@
     <ClInclude Include="NoCopyAble.h" />
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayMath.h" />
+    <ClInclude Include="RayTracer.h" />
     <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="ThreadPool.h" />

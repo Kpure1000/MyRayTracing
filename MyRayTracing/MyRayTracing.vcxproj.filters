@@ -86,5 +86,8 @@
     <ClInclude Include="NoCopyAble.h">
       <Filter>头文件\thread</Filter>
     </ClInclude>
+    <ClInclude Include="RayTracer.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -5,14 +5,7 @@
 #include<thread>
 #include<stb/stb_image_write.h>
 
-#include"HitList.h"
-#include"RayMath.h"
-#include"Material.h"
-#include"Sphere.h"
-#include"Camera.h"
-#include"Color.h"
-
-#include"IntersectionHit.h"
+#include"RayTracer.h"
 
 #ifndef __linux__
 #include<Windows.h>
@@ -22,9 +15,6 @@
 #define MULTI_THREAD 1
 
 using namespace std;
-using namespace ry;
-
-Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth);
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
@@ -70,10 +60,10 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 400; //  宽
-	int ny = 200; //  高
+	int nx = 800; //  宽
+	int ny = 600; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 20; //  抗锯齿(蒙特卡洛采样)
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
@@ -85,38 +75,44 @@ int run(int threadIndex, ofstream& out)
 
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
-	int objNumSq = 11;
+	int objNumSq = 0;
 	world = randomScence(MaxWorldSize, objNumSq);
-	world->size += 1;
-	world->list[world->size-1] = new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian({ 0.3f,0.3f,0.3f }));
-	world->size += 3;
-	world->list[(*world).size - 3] = new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
-		new Lambertian({ 0.1f,0.2f,0.5f }));
 
-	world->list[(*world).size - 2] = new Sphere(new SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
-		new Metal({ 0.8f,0.6f,0.2f }, 0.0f));
+	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 999.0f), new Lambertian({ 0.3f,0.3f,0.3f })));
 
-	world->list[(*world).size - 1] = new Sphere(new SdfSphere({ -4,1.5f,-1 }, 1.75f),
-		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f));
+	world->AddHitable(new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
+		new Lambertian({ 0.1f,0.2f,0.5f })));
 
-	/*world->list[world->size - 1] = new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f)),
-		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Metal({ 0.8f,0.8f,0.8f }, 0.2f)),
+	world->AddHitable(new Sphere(new SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
+		new Metal({ 0.8f,0.6f,0.2f }, 0.0f)));
+
+	world->AddHitable(new Sphere(new SdfSphere({ -4,1.5f,-1 }, 1.75f),
+		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)));
+
+	/*world->AddHitable(new IntersectionHit(
+		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)),
+		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Dielectric({ 0.8f,0.8f,0.8f }, 1.2f)),
 		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)
-	);*/
+	));*/
 
-	/*world->list[world->size - 2] = new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f));
-	world->list[world->size - 1] = new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Metal({ 1.0f,1.0f,1.0f }, 0.1f));*/
+	/*world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)));
+	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)));*/
+
+	//world->AddHitable(new Light(new SdfSphere({ 20.0f,20.0f,-20.0f }, 15.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
+
+	world->AddHitable(new Light(new SdfSphere({ 15.0f,10.0f,-15.0f }, 15.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
+
+	world->AddHitable(new Light(new SdfSphere({ 0.0f,1000.0f,0.0f }, 990.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
 
 #pragma endregion
 
-	Vector3 lookFrom(-12.0f, 3.9f, 9.8f);
-	Vector3 lookAt(-0.2f, 1.0f, -1.0f);
+	Vector3 lookFrom(-10.0f, 1.5f, 9.8f);
+	Vector3 lookAt(-0.2f, 0.6f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
 	float aperture = 0.1f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 25, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 	out << "第" << threadIndex << "次渲染准备\n";
@@ -139,8 +135,13 @@ int run(int threadIndex, ofstream& out)
 	}
 	time_t startTime;
 
+#ifndef MULTI_THREAD
+#else
+#endif // !MULTI_THREAD
+
 	if (MULTI_THREAD)
 	{
+		//多线程模式
 		SYSTEM_INFO systemInfo;
 		GetSystemInfo(&systemInfo);
 		int coreNum = (int)(systemInfo.dwNumberOfProcessors);
@@ -241,6 +242,7 @@ int run(int threadIndex, ofstream& out)
 	}
 	else
 	{
+		//单线程模式
 		float curRate = 0.0f;
 		cout << "准备开始渲染" << endl;
 		system("pause");
@@ -249,6 +251,7 @@ int run(int threadIndex, ofstream& out)
 
 		startTime = clock(); //  开始时间
 
+		//进度跟踪线程
 		thread([](float* curRate)->void
 			{
 				auto sTime = 0;
@@ -336,30 +339,7 @@ int main()
 	system("pause");
 }
 
-Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
-{
-	HitRecord rec;
-	if (world->Hit(ray, 0.001f, MAX_FLOAT, rec))
-	{
-		Ray scattered;
-		Vector3 attenuation;
-		if (maxDepth > 0 && rec.mat->Scatter(ray, rec, attenuation, scattered))
-		{
-			return attenuation * RayTracer(scattered, world, maxDepth - 1);
-		}
-		else
-		{
-			return Vector3::Zero;
-		}
-	}
-	else
-	{
-		Vector3 sky = ray.Direction().Normalize();
-		float t = 0.5f * (sky[1] + 1.0f);
-		return (1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f);
-	}
 
-}
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber)

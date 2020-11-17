@@ -25,6 +25,12 @@ namespace ry
 			}
 		}
 
+		void AddHitable(Hitable* hit)
+		{
+			size++;
+			list[size - 1] = hit;
+		}
+
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
 		{
 			HitRecord recTmp;

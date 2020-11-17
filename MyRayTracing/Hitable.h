@@ -13,10 +13,11 @@ namespace ry
 	struct HitRecord
 	{
 	public:
-		float t;
+		float t = 0.0f;
 		Vector3 hitPoint;
 		Vector3 normal;
-		Material* mat;
+		Material* mat = nullptr;
+		bool isStoped = false;
 	};
 
 	class Hitable

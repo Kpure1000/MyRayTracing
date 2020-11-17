@@ -120,5 +120,28 @@ namespace ry
 		float refractive_Indices;
 	};
 
+	class Illumination : public Material
+	{
+	public:
+
+		Illumination(const Vector3& Albedo, const float& Intensity)
+			:albedo(Albedo), intensity(Intensity) {}
+
+		/*
+		* 兰伯特漫反射
+		* rayIn:入射线, rec:射线碰撞记录, attenuation:反射率, scattered:散射光线
+		*/
+		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
+		{
+			attenuation = albedo * std::max(0.0f, std::min(1.0f, intensity));
+			return true;
+		}
+
+		//颜色
+		Vector3 albedo;
+
+		float intensity;
+	};
+
 }
 #endif
