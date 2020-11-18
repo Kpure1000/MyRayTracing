@@ -65,10 +65,10 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 512; //  宽
-	int ny = 288; //  高
+	int nx = 1920; //  宽
+	int ny = 1080; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int ns = 500; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
@@ -80,10 +80,10 @@ int run(int threadIndex, ofstream& out)
 
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
-	int objNumSq = 0;
+	int objNumSq = 11;
 	world = randomScence(MaxWorldSize, objNumSq);
 
-	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 999.0f), new Metal(
+	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian(
 		new Check_Texture([](const float&u, const float&v, const Vector3&p)->Vector3{
 			float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
 			if (sine > 0)
@@ -94,11 +94,11 @@ int run(int threadIndex, ofstream& out)
 			{
 				return { 0.8f,0.8f,0.8f };
 			}
-			}), 0.5f
+			})//, 1.5f
 	)));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
-		new Lambertian(new Constant_Texture({ 0.1f,0.2f,0.5f }))));
+		new Lambertian(new Constant_Texture({ 0.7f,0.7f,0.7f }))));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 5.0f,1.5f,-1 }, 1.75f),
 		new Metal(new Constant_Texture({ 0.8f,0.6f,0.2f }), 0.0f)));
@@ -106,8 +106,14 @@ int run(int threadIndex, ofstream& out)
 	world->AddHitable(new Sphere(new SdfSphere({ -5,1.5f,-1 }, 1.75f),
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)));
 
-	world->AddHitable(new Light(new SdfSphere({ 0.0f,1100.0f,0.0f }, 990.3f),
+	world->AddHitable(new Light(new SdfSphere({ 20.0f,30.0f, 0.0f }, 20.3f),
 		new Illumination(new Constant_Texture({ 1.0f,0.0f,0.0f }), 1.0f)));
+
+	world->AddHitable(new Light(new SdfSphere({ 0.0f,36.05f, 0.0f }, 20.3f),
+		new Illumination(new Constant_Texture({ 0.0f,1.0f,0.0f }), 1.0f)));
+
+	world->AddHitable(new Light(new SdfSphere({ -20.0f,30.0f, 0.0f }, 20.3f),
+		new Illumination(new Constant_Texture({ 0.0f,0.0f,1.0f }), 1.0f)));
 
 	/*world->AddHitable(new IntersectionHit(
 		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)),
@@ -127,10 +133,10 @@ int run(int threadIndex, ofstream& out)
 	Vector3 lookFrom(-10.0f, 1.5f, 9.8f);
 	Vector3 lookAt(-0.2f, 0.6f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
-	float aperture = 0.1f;
+	float aperture = 0.15f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 45, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 	out << "第" << threadIndex << "次渲染准备\n";

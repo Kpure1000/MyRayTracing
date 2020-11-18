@@ -17,7 +17,7 @@ namespace ry
 		Vector3 hitPoint;
 		Vector3 normal;
 		Material* mat = nullptr;
-		//bool isStoped = false;
+		float u = 0.0f, v = 0.0f;
 	};
 
 	class Hitable

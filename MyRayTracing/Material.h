@@ -37,23 +37,23 @@ namespace ry
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
 			Vector3 target;
-			if (normalTexture == nullptr)
+			if (normalTexture != nullptr) // 法线贴图
+			{
+				target = rec.hitPoint + normalTexture->Value(rec.u, rec.v, rec.hitPoint) + random_in_unit_ball();
+			}
+			else //  普通贴图
 			{
 				target = rec.hitPoint + rec.normal + random_in_unit_ball();
 			}
-			else
-			{
-				target = rec.hitPoint + normalTexture->Value(0, 0, rec.hitPoint) + random_in_unit_ball();
-			}
 			scattered = Ray(rec.hitPoint, target - rec.hitPoint);
-			attenuation = albedo->Value(0, 0, rec.hitPoint);
+			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 			return true;
 		}
 
-		//反射率
+		//纹理
 		Texture* albedo;
 
-		//法线贴图的纹理
+		//法线贴图纹理
 		Texture* normalTexture;
 	};
 
@@ -75,11 +75,11 @@ namespace ry
 		{
 			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
 			scattered = Ray(rec.hitPoint, reflected + fuzz * randomUnitVector());
-			attenuation = albedo->Value(0, 0, rec.hitPoint);
+			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 			return (Vector3::Dot(scattered.Direction(), rec.normal) > 0);
 		}
 
-		//反射率
+		//纹理
 		Texture* albedo;
 
 		//粗糙率
@@ -101,7 +101,7 @@ namespace ry
 		{
 			Vector3 refracted;
 			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
-			attenuation = albedo->Value(0, 0, rec.hitPoint);
+			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 
 			float cosine;
 
@@ -133,7 +133,7 @@ namespace ry
 			return true;
 		}
 
-		//反射率
+		//纹理
 		Texture* albedo;
 
 		//折射率
@@ -150,7 +150,7 @@ namespace ry
 		
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			attenuation = albedo->Value(0, 0, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));
+			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));
 			return false;
 		}
 
@@ -159,10 +159,26 @@ namespace ry
 			return albedo->Value(u, v, pos) * std::max(0.0f, std::min(1.0f, intensity));
 		}
 
-		//颜色
+		//纹理
 		Texture* albedo;
 
 		float intensity;
+	};
+
+	class Skybox : public Material
+	{
+	public:
+
+		Skybox() :albedo(nullptr) {}
+
+		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
+		{
+			attenuation = albedo->Value(0, 0, rec.hitPoint);
+			return false;
+		}
+
+		//纹理
+		Texture* albedo;
 	};
 
 }
