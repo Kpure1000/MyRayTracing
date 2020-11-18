@@ -4,7 +4,7 @@
 #include<random>
 #include<thread>
 #include<stb/stb_image_write.h>
-
+#include<algorithm>
 #include"RayTracer.h"
 #include"Texture.h"
 
@@ -14,6 +14,9 @@
 
 // 开启多线程
 #define MULTI_THREAD 1
+
+//采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
+#define REDUCE_INEGRATE
 
 using namespace std;
 
@@ -65,8 +68,8 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 1920; //  宽
-	int ny = 1080; //  高
+	int nx = 512; //  宽
+	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
 	int ns = 500; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
@@ -131,14 +134,22 @@ int run(int threadIndex, ofstream& out)
 #pragma endregion
 
 	Vector3 lookFrom(-10.0f, 1.5f, 9.8f);
-	Vector3 lookAt(-0.2f, 0.6f, -1.0f);
+	Vector3 lookAt(-0.2f, 3.6f, -1.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
-	float aperture = 0.15f;
+	float aperture = 0.0f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 45, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 65, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
+#ifdef REDUCE_INEGRATE
+	out << "是否开启采样优化: 是\n";
+	cout << "是否开启采样优化: 是\n";
+#else
+	out << "是否开启采样优化: 否\n";
+	cout << "是否开启采样优化: 否\n";
+#endif // REDUCE_INEGRATE
+
 	out << "第" << threadIndex << "次渲染准备\n";
 	out << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
@@ -292,21 +303,55 @@ int run(int threadIndex, ofstream& out)
 					}
 				}
 			}, &curRate).detach();
-
+			int deep = 1;
+			int intersectionTimes = 0;
+			int tryNs = min(ns, max(10, ns / 10));
+			float u, v;
 			for (int j = 0; j < ny; j++)
 			{
 				for (int i = 0; i < nx; i++)
 				{
 					color.rgb = Vector3::Zero;
+#ifdef REDUCE_INEGRATE
+					intersectionTimes = 0;
+					//先试着采样ns/10次
+					for (int k = 0; k < tryNs; k++)
+					{
+						deep = 1;
+						u = float(i + Drand48()) / float(nx);
+						v = float(j + Drand48()) / float(ny);
+						r = camera.GetRay(u, v);
+						color.rgb += RayTracer(r, world, maxTraceDepth, deep);
+						if (deep > 1)intersectionTimes++;
+					}
+					//如果大概率深度大于1
+					if (intersectionTimes > tryNs * 0.8)
+					{
+						//继续采样
+						for (int k = 0; k < ns - tryNs; k++)
+						{
+							u = float(i + Drand48()) / float(nx);
+							v = float(j + Drand48()) / float(ny);
+							r = camera.GetRay(u, v);
+							color.rgb += RayTracer(r, world, maxTraceDepth);
+						}
+						color.rgb /= float(ns);
+					}
+					else
+					{
+						color.rgb /= float(tryNs);
+					}
+#else
 					float u, v;
 					for (int k = 0; k < ns; k++)
 					{
-						u = float(i + rand() % 100 / (float)100) / float(nx);
-						v = float(j + rand() % 100 / (float)100) / float(ny);
+						u = float(i + Drand48()) / float(nx);
+						v = float(j + Drand48()) / float(ny);
 						r = camera.GetRay(u, v);
 						color.rgb += RayTracer(r, world, maxTraceDepth);
 					}
 					color.rgb /= float(ns);
+#endif // REDUCE_INEGRATE
 					color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 					for (int ch = 0; ch < nChannel; ch++)
 					{
@@ -370,21 +415,55 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 {
 	Color color;
 	Ray r;
-	//int task = start * (float)(end - start);
+	int deep = 1;
+	int intersectionTimes = 0;
+	int tryNs = min(ns, max(10, ns / 10));
+	float u, v;
 	for (int j = start; j < end; j++)
 	{
 		for (int i = 0; i < nx; i++)
 		{
 			color.rgb = Vector3::Zero;
+#ifdef REDUCE_INEGRATE
+			intersectionTimes = 0;
+			//先试着采样ns/10次
+			for (int k = 0; k < tryNs; k++)
+			{
+				deep = 1;
+				u = float(i + Drand48()) / float(nx);
+				v = float(j + Drand48()) / float(ny);
+				r = camera->GetRay(u, v);
+				color.rgb += RayTracer(r, world, maxTraceDepth, deep);
+				if (deep > 1)intersectionTimes++;
+			}
+			//如果大概率深度大于1
+			if (intersectionTimes > tryNs * 0.8)
+			{
+				//继续采样
+				for (int k = 0; k < ns - tryNs; k++)
+				{
+					u = float(i + Drand48()) / float(nx);
+					v = float(j + Drand48()) / float(ny);
+					r = camera->GetRay(u, v);
+					color.rgb += RayTracer(r, world, maxTraceDepth);
+				}
+				color.rgb /= float(ns);
+			}
+			else
+			{
+				color.rgb /= float(tryNs);
+			}
+#else
 			float u, v;
 			for (int k = 0; k < ns; k++)
 			{
 				u = float(i + Drand48()) / float(nx);
 				v = float(j + Drand48()) / float(ny);
-				r = (*camera).GetRay(u, v);
+				r = camera->GetRay(u, v);
 				color.rgb += RayTracer(r, world, maxTraceDepth);
 			}
 			color.rgb /= float(ns);
+#endif // REDUCE_INEGRATE
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 			for (int ch = 0; ch < nChannel; ch++)
 			{

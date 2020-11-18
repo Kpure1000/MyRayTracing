@@ -11,9 +11,11 @@ namespace ry
 	public:
 
 		IntersectionHit(Hitable* a, Hitable* b, Material* mat)
-			:Hitable(new SdfIntersection(a->sdf, b->sdf), mat),
-			hA(a), hB(b)
-		{}
+			:Hitable(new SdfIntersection(a->sdf, b->sdf), mat)
+		{
+			hits[0] = a;
+			hits[1] = b;
+		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
@@ -22,11 +24,11 @@ namespace ry
 			auto result = sdf->Hit(r, tMin, tMax, rec, sdfR);
 			if (result && sdfR == SdfRecord::A)
 			{
-				if (hA->material)rec.mat = hA->material;
+				if (hits[0]->material)rec.mat = hits[0]->material;
 			}
 			else if (result && sdfR == SdfRecord::B)
 			{
-				if (hB->material)rec.mat = hB->material;
+				if (hits[1]->material)rec.mat = hits[1]->material;
 			}
 			else
 			{
@@ -40,7 +42,7 @@ namespace ry
 			material = mat;
 		}
 
-		Hitable* hA, * hB;
+		Hitable* hits[2];
 
 	};
 }

@@ -2,7 +2,8 @@
 #define SDF_H
 #include"Ray.h"
 using namespace ry;
-
+using std::min;
+using std::max;
 namespace sdf
 {
 	/*碰撞距离场记录*/
@@ -14,10 +15,6 @@ namespace sdf
 		B
 	};
 
-	/*
-	* 有符号距离场
-	* 表示0亏格单个面组成的体（球、长方体等）
-	*/
 	class Sdf
 	{
 	public:
@@ -25,6 +22,8 @@ namespace sdf
 			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const = 0;
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const = 0;
+
+		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax) = 0;
 	};
 
 	class SdfSphere : public Sdf
@@ -75,6 +74,19 @@ namespace sdf
 			}
 		}
 
+		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		{
+			rMin[0] = center[0] - radius;
+			rMin[1] = center[1] - radius;
+			rMin[2] = center[2] - radius;
+			rMax[0] = center[0] + radius;
+			rMax[1] = center[1] + radius;
+			rMax[2] = center[2] + radius;
+			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
+			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
+			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+		}
+
 		Vector3 center;
 
 		float radius;
@@ -84,10 +96,10 @@ namespace sdf
 	{
 	public:
 
-		SdfIntersection(Sdf* A, Sdf* B)
-			:sdfA(A), sdfB(B)
+		SdfIntersection(Sdf* A, Sdf* B)			
 		{
-
+			sdfs[0] = A;
+			sdfs[1] = B;
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
@@ -97,8 +109,8 @@ namespace sdf
 			HitRecord resA = result, resB = result; //  碰撞结果
 			bool isHitA, isHitB; //  是否碰撞
 			float discriminant;
-			isHitA = sdfA->Hit(r, tMin, tMax, resA, sdfRec);
-			isHitB = sdfB->Hit(r, tMin, tMax, resB, sdfRec);
+			isHitA = sdfs[0]->Hit(r, tMin, tMax, resA, sdfRec);
+			isHitB = sdfs[1]->Hit(r, tMin, tMax, resB, sdfRec);
 			float sdfResult;
 			if (isHitA || isHitB)
 			{
@@ -144,22 +156,38 @@ namespace sdf
 		/*相交区域的*/
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
-			return sdfA->sdf(p, sdfResult)
-				&& sdfB->sdf(p, sdfResult);
+			return sdfs[0]->sdf(p, sdfResult)
+				&& sdfs[1]->sdf(p, sdfResult);
 		}
 
-		Sdf* sdfA;
-		Sdf* sdfB;
+		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		{
+			Vector3 aMin, aMax, bMin, bMax, aMid, bMid;
+			sdfs[0]->Range(aMid, aMin, aMax);
+			sdfs[1]->Range(bMid, bMin, bMax);
+			rMin[0] = max(aMin[0], bMin[0]);
+			rMin[1] = max(aMin[1], bMin[1]);
+			rMin[2] = max(aMin[2], bMin[2]);
+			rMax[0] = min(aMax[0], bMax[0]);
+			rMax[1] = min(aMax[1], bMax[1]);
+			rMax[2] = min(aMax[2], bMax[2]);
+			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
+			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
+			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+		}
+
+		Sdf* sdfs[2];
+
 	};
 
 	class SdfUnion : public Sdf
 	{
 	public:
 
-		SdfUnion(Sdf* A, Sdf* B)
-			:sdfA(A), sdfB(B)
+		SdfUnion(Sdf* A, Sdf* B):sdfs()
 		{
-
+			sdfs[0] = A;
+			sdfs[1] = B;
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
@@ -173,8 +201,23 @@ namespace sdf
 			return true;
 		}
 
-		Sdf* sdfA;
-		Sdf* sdfB;
+		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		{
+			Vector3 aMin, aMax, bMin, bMax, aMid, bMid;
+			sdfs[0]->Range(aMid, aMin, aMax);
+			sdfs[1]->Range(bMid, bMin, bMax);
+			rMin[0] = min(aMin[0], bMin[0]);
+			rMin[1] = min(aMin[1], bMin[1]);
+			rMin[2] = min(aMin[2], bMin[2]);
+			rMax[0] = max(aMax[0], bMax[0]);
+			rMax[1] = max(aMax[1], bMax[1]);
+			rMax[2] = max(aMax[2], bMax[2]);
+			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
+			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
+			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+		}
+
+		Sdf* sdfs[2];
 	};
 
 }

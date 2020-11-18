@@ -10,23 +10,39 @@ namespace ry
 	{
 	public:
 
-		UnionHit(Sdf* a, Sdf* b)
-			:sdfA(a), sdfB(b), sdf(a, b)
-		{}
+		UnionHit(Hitable* a, Hitable* b, Material* mat)
+			:Hitable(new SdfUnion(a->sdf, b->sdf), mat)
+		{
+			hits[0] = a;
+			hits[1] = b;
+		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
 		{
-
+			SdfRecord sdfR;
+			auto result = sdf->Hit(r, tMin, tMax, rec, sdfR);
+			if (result && sdfR == SdfRecord::A)
+			{
+				if (hits[0]->material)rec.mat = hits[0]->material;
+			}
+			else if (result && sdfR == SdfRecord::B)
+			{
+				if (hits[1]->material)rec.mat = hits[1]->material;
+			}
+			else
+			{
+				if (material)rec.mat = material;
+			}
+			return result;
 		}
 
-		SdfUnion sdf;
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
+		}
 
-		Sdf* sdfA;
-		Sdf* sdfB;
-
-		Material* matA;
-		Material* matB;
+		Hitable* hits[2];
 	};
 }
 #endif // !UNIONHIT_H

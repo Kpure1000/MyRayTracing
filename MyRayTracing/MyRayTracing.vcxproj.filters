@@ -92,5 +92,8 @@
     <ClInclude Include="Texture.h">
       <Filter>头文件\render</Filter>
     </ClInclude>
+    <ClInclude Include="AABB.h">
+      <Filter>头文件\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
