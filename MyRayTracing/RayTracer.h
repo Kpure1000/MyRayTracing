@@ -19,25 +19,22 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
 	{
 		Ray scattered;
 		Vector3 attenuation;
+		Vector3 emitted = rec.mat->Emitted(0, 0, { 0,0,0 });
 		if (maxDepth > 0 && rec.mat->Scatter(ray, rec, attenuation, scattered))
 		{
-			if (rec.isStoped)
-			{
-				return attenuation;
-			}
-			return attenuation * RayTracer(scattered, world, maxDepth - 1);
+			return emitted + attenuation * RayTracer(scattered, world, maxDepth - 1);
 		}
 		else
 		{
-			return Vector3::Zero;
+			return emitted;
 		}
 	}
 	else
 	{
-		/*Vector3 sky = ray.Direction().Normalize();
+		Vector3 sky = ray.Direction().Normalize();
 		float t = 0.5f * (sky[1] + 1.0f);
-		return (1.0f - t) * Vector3::One + t * Vector3(0.5f, 0.7f, 1.0f);*/
-		return Vector3::Zero;
+		return (1.0f - t) * Vector3(0.6f, 0.6f, 0.6f) + t * Vector3(0.7f, 0.6f, 0.1f);
+		//return Vector3::Zero;
 	}
 
 }

@@ -2,6 +2,7 @@
 #define MATERIAL_H
 #include"Ray.h"
 #include"Hitable.h"
+#include"Texture.h"
 #include<iostream>
 
 namespace ry
@@ -12,6 +13,11 @@ namespace ry
 	public:
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec,
 			Vector3& attenuation, Ray& scattered)const = 0;
+
+		virtual Vector3 Emitted(const float& u, const float& v, const Vector3& pos)const
+		{
+			return { 0,0,0 };
+		}
 	};
 
 	/*兰伯特漫反射材质*/
@@ -19,7 +25,10 @@ namespace ry
 	{
 	public:
 
-		Lambertian(const Vector3 Albedo) :albedo(Albedo) {}
+		Lambertian(Texture* t) :albedo(t), normalTexture(nullptr) {}
+
+		Lambertian(Texture* t, Texture* NormalT)
+			:albedo(t), normalTexture(NormalT) {}
 
 		/*
 		* 兰伯特漫反射
@@ -27,14 +36,25 @@ namespace ry
 		*/
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			Vector3 target = rec.hitPoint + rec.normal + random_in_unit_ball();
+			Vector3 target;
+			if (normalTexture == nullptr)
+			{
+				target = rec.hitPoint + rec.normal + random_in_unit_ball();
+			}
+			else
+			{
+				target = rec.hitPoint + normalTexture->Value(0, 0, rec.hitPoint) + random_in_unit_ball();
+			}
 			scattered = Ray(rec.hitPoint, target - rec.hitPoint);
-			attenuation = albedo;
+			attenuation = albedo->Value(0, 0, rec.hitPoint);
 			return true;
 		}
 
 		//反射率
-		Vector3 albedo;
+		Texture* albedo;
+
+		//法线贴图的纹理
+		Texture* normalTexture;
 	};
 
 	/*镜面反射材质*/
@@ -42,8 +62,8 @@ namespace ry
 	{
 	public:
 
-		Metal(const Vector3& Albedo, const float& Fuzz)
-			:albedo(Albedo), fuzz(abs(Fuzz)) {
+		Metal(Texture* t, const float& Fuzz)
+			:albedo(t), fuzz(abs(Fuzz)) {
 			fuzz = fuzz < 1 ? fuzz : 1;
 		}
 
@@ -55,12 +75,12 @@ namespace ry
 		{
 			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
 			scattered = Ray(rec.hitPoint, reflected + fuzz * randomUnitVector());
-			attenuation = albedo;
+			attenuation = albedo->Value(0, 0, rec.hitPoint);
 			return (Vector3::Dot(scattered.Direction(), rec.normal) > 0);
 		}
 
 		//反射率
-		Vector3 albedo;
+		Texture* albedo;
 
 		//粗糙率
 		float fuzz;
@@ -71,7 +91,7 @@ namespace ry
 	{
 	public:
 
-		Dielectric(const Vector3 &Albedo, const float& Refractive_Indices) :albedo(Albedo), refractive_Indices(Refractive_Indices) {}
+		Dielectric(Texture* t, const float& Refractive_Indices) :albedo(t), refractive_Indices(Refractive_Indices) {}
 
 		/*
 		* 折射
@@ -81,7 +101,7 @@ namespace ry
 		{
 			Vector3 refracted;
 			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
-			attenuation = albedo;
+			attenuation = albedo->Value(0, 0, rec.hitPoint);
 
 			float cosine;
 
@@ -114,7 +134,7 @@ namespace ry
 		}
 
 		//反射率
-		Vector3 albedo;
+		Texture* albedo;
 
 		//折射率
 		float refractive_Indices;
@@ -124,21 +144,23 @@ namespace ry
 	{
 	public:
 
-		Illumination(const Vector3& Albedo, const float& Intensity)
-			:albedo(Albedo), intensity(Intensity) {}
+		Illumination(Texture* t, const float& Intensity)
+			:albedo(t), intensity(Intensity) {}
 
-		/*
-		* 兰伯特漫反射
-		* rayIn:入射线, rec:射线碰撞记录, attenuation:反射率, scattered:散射光线
-		*/
+		
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			attenuation = albedo * std::max(0.0f, std::min(1.0f, intensity));
-			return true;
+			attenuation = albedo->Value(0, 0, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));
+			return false;
+		}
+
+		virtual Vector3 Emitted(const float& u, const float& v, const Vector3& pos)const
+		{
+			return albedo->Value(u, v, pos) * std::max(0.0f, std::min(1.0f, intensity));
 		}
 
 		//颜色
-		Vector3 albedo;
+		Texture* albedo;
 
 		float intensity;
 	};

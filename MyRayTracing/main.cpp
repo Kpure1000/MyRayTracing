@@ -6,6 +6,7 @@
 #include<stb/stb_image_write.h>
 
 #include"RayTracer.h"
+#include"Texture.h"
 
 #ifndef __linux__
 #include<Windows.h>
@@ -35,33 +36,37 @@ HitList* randomScence(int maxSize, int randomIndex)
 				if (choose_mat < 0.7f)
 				{
 					list[i++] = new Sphere(new SdfSphere(center, 0.2f), new Lambertian(
-						{ (float)Drand48() * (float)Drand48() ,
+						new Constant_Texture({ (float)Drand48() * (float)Drand48() ,
 						(float)Drand48() * (float)Drand48() ,
-						(float)Drand48() * (float)Drand48() }));
+						(float)Drand48() * (float)Drand48() })));
 				}
 				else if (choose_mat < 0.85f)
 				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2f), new Metal({
-						0.5f * (float)(1 + Drand48()),0.5f * (float)(1 + Drand48()) ,0.5f * (float)(1 + Drand48()) },
+					list[i++] = new Sphere(new SdfSphere(center, 0.2f), new Metal(
+						new Constant_Texture({
+						0.5f * (float)(1 + Drand48()),
+						0.5f * (float)(1 + Drand48()),
+						0.5f * (float)(1 + Drand48()) }),
 						0.5f * Drand48()));
 				}
 				else
 				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2), new Dielectric({ 1,1,1 }, 1.5));
+					list[i++] = new Sphere(new SdfSphere(center, 0.2), 
+						new Dielectric(new Constant_Texture({ 1,1,1 }), 1.5));
 				}
 			}
 		}
 	}
 
-	return new HitList(list, i);
+	return new HitList(list, i, maxSize);
 }
 
 int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 800; //  宽
-	int ny = 600; //  高
+	int nx = 512; //  宽
+	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
 	int ns = 100; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
@@ -78,31 +83,44 @@ int run(int threadIndex, ofstream& out)
 	int objNumSq = 0;
 	world = randomScence(MaxWorldSize, objNumSq);
 
-	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 999.0f), new Lambertian({ 0.3f,0.3f,0.3f })));
+	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 999.0f), new Metal(
+		new Check_Texture([](const float&u, const float&v, const Vector3&p)->Vector3{
+			float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
+			if (sine > 0)
+			{
+				return { 0.25f,0.35f,0.1f };
+			}
+			else
+			{
+				return { 0.8f,0.8f,0.8f };
+			}
+			}), 0.5f
+	)));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
-		new Lambertian({ 0.1f,0.2f,0.5f })));
+		new Lambertian(new Constant_Texture({ 0.1f,0.2f,0.5f }))));
 
-	world->AddHitable(new Sphere(new SdfSphere({ 4.0f,1.5f,-1 }, 1.75f),
-		new Metal({ 0.8f,0.6f,0.2f }, 0.0f)));
+	world->AddHitable(new Sphere(new SdfSphere({ 5.0f,1.5f,-1 }, 1.75f),
+		new Metal(new Constant_Texture({ 0.8f,0.6f,0.2f }), 0.0f)));
 
-	world->AddHitable(new Sphere(new SdfSphere({ -4,1.5f,-1 }, 1.75f),
-		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)));
+	world->AddHitable(new Sphere(new SdfSphere({ -5,1.5f,-1 }, 1.75f),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)));
+
+	world->AddHitable(new Light(new SdfSphere({ 0.0f,1100.0f,0.0f }, 990.3f),
+		new Illumination(new Constant_Texture({ 1.0f,0.0f,0.0f }), 1.0f)));
 
 	/*world->AddHitable(new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)),
-		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Dielectric({ 0.8f,0.8f,0.8f }, 1.2f)),
-		new Dielectric({ 1.0f,1.0f,1.0f }, 1.5f)
+		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)),
+		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Dielectric(new Constant_Texture({ 0.8f,0.8f,0.8f }), 1.2f)),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
 	));*/
 
-	/*world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)));
-	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f), new Dielectric({ 1.0f,1.0f,1.0f }, 1.2f)));*/
+	/*world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));
+	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));*/
 
-	//world->AddHitable(new Light(new SdfSphere({ 20.0f,20.0f,-20.0f }, 15.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
-
-	world->AddHitable(new Light(new SdfSphere({ 15.0f,10.0f,-15.0f }, 15.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
-
-	world->AddHitable(new Light(new SdfSphere({ 0.0f,1000.0f,0.0f }, 990.3f), new Illumination({ 1.0f,1.0f,1.0f }, 1.0f)));
+	
 
 #pragma endregion
 

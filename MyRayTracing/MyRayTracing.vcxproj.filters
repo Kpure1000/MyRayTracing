@@ -89,5 +89,8 @@
     <ClInclude Include="RayTracer.h">
       <Filter>头文件\render</Filter>
     </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

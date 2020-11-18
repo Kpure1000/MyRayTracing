@@ -9,12 +9,13 @@ namespace ry
 
 		HitList() : list(NULL), size(0) {}
 
-		HitList(int listSize) : size(listSize)
+		HitList(int MaxSize) : size(0), maxSize(MaxSize)
 		{
-			list = (Hitable**)malloc(sizeof(Hitable*) * size);
+			list = (Hitable**)malloc(sizeof(Hitable*) * maxSize);
 		}
 
-		HitList(Hitable** List, int listSize) :list(List), size(listSize)
+		HitList(Hitable** List, int CurSize, int MaxSize)
+			:list(List), size(CurSize), maxSize(MaxSize)
 		{}
 
 		~HitList()
@@ -27,8 +28,11 @@ namespace ry
 
 		void AddHitable(Hitable* hit)
 		{
-			size++;
-			list[size - 1] = hit;
+			if (size < maxSize)
+			{
+				size++;
+				list[size - 1] = hit;
+			}
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
@@ -55,6 +59,7 @@ namespace ry
 
 		Hitable** list;
 		int size;
+		int maxSize;
 
 	};
 }

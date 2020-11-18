@@ -17,12 +17,11 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
 		{
 			SdfRecord sdfR;
-			rec.isStoped = sdf->Hit(r, tMin, tMax, rec, sdfR);
 			if (material != nullptr)
 			{
 				rec.mat = material;
 			}
-			return rec.isStoped;
+			return sdf->Hit(r, tMin, tMax, rec, sdfR);
 		}
 
 		virtual void SetMaterial(Material* mat)

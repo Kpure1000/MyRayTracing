@@ -158,6 +158,7 @@
     <ClInclude Include="RayTracer.h" />
     <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="ThreadPool.h" />
     <ClInclude Include="UnionHit.h" />
     <ClInclude Include="Vector3.h" />
