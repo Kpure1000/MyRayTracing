@@ -1,6 +1,7 @@
 #ifndef SDF_H
 #define SDF_H
 #include"Ray.h"
+#include"AABB.h"
 using namespace ry;
 using std::min;
 using std::max;
@@ -23,7 +24,16 @@ namespace sdf
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const = 0;
 
-		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax) = 0;
+		virtual bool Range(AABB& box)
+		{
+			return true;
+		}
+
+		virtual bool Range(float t0, float t1, AABB& box)
+		{
+			return true;
+		}
+
 	};
 
 	class SdfSphere : public Sdf
@@ -74,17 +84,18 @@ namespace sdf
 			}
 		}
 
-		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		virtual bool Range(AABB& box)
 		{
-			rMin[0] = center[0] - radius;
-			rMin[1] = center[1] - radius;
-			rMin[2] = center[2] - radius;
-			rMax[0] = center[0] + radius;
-			rMax[1] = center[1] + radius;
-			rMax[2] = center[2] + radius;
-			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
-			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
-			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+			box.rect[0][0] = center[0] - radius;
+			box.rect[0][1] = center[1] - radius;
+			box.rect[0][2] = center[2] - radius;
+			box.rect[1][0] = center[0] + radius;
+			box.rect[1][1] = center[1] + radius;
+			box.rect[1][2] = center[2] + radius;
+			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
+			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
+			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
+			return true;
 		}
 
 		Vector3 center;
@@ -160,20 +171,21 @@ namespace sdf
 				&& sdfs[1]->sdf(p, sdfResult);
 		}
 
-		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		virtual bool Range(AABB& box)
 		{
-			Vector3 aMin, aMax, bMin, bMax, aMid, bMid;
-			sdfs[0]->Range(aMid, aMin, aMax);
-			sdfs[1]->Range(bMid, bMin, bMax);
-			rMin[0] = max(aMin[0], bMin[0]);
-			rMin[1] = max(aMin[1], bMin[1]);
-			rMin[2] = max(aMin[2], bMin[2]);
-			rMax[0] = min(aMax[0], bMax[0]);
-			rMax[1] = min(aMax[1], bMax[1]);
-			rMax[2] = min(aMax[2], bMax[2]);
-			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
-			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
-			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+			AABB boxA, boxB;
+			sdfs[0]->Range(boxA);
+			sdfs[1]->Range(boxB);
+			box.rect[0][0] = max(boxA.rect[0][0], boxB.rect[0][0]);
+			box.rect[0][1] = max(boxA.rect[0][1], boxB.rect[0][1]);
+			box.rect[0][2] = max(boxA.rect[0][2], boxB.rect[0][2]);
+			box.rect[1][0] = min(boxA.rect[1][0], boxB.rect[1][0]);
+			box.rect[1][1] = min(boxA.rect[1][1], boxB.rect[1][1]);
+			box.rect[1][2] = min(boxA.rect[1][2], boxB.rect[1][2]);
+			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
+			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
+			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
+			return true;
 		}
 
 		Sdf* sdfs[2];
@@ -201,20 +213,21 @@ namespace sdf
 			return true;
 		}
 
-		virtual void Range(Vector3& middle, Vector3& rMin, Vector3& rMax)
+		virtual bool Range(AABB& box)
 		{
-			Vector3 aMin, aMax, bMin, bMax, aMid, bMid;
-			sdfs[0]->Range(aMid, aMin, aMax);
-			sdfs[1]->Range(bMid, bMin, bMax);
-			rMin[0] = min(aMin[0], bMin[0]);
-			rMin[1] = min(aMin[1], bMin[1]);
-			rMin[2] = min(aMin[2], bMin[2]);
-			rMax[0] = max(aMax[0], bMax[0]);
-			rMax[1] = max(aMax[1], bMax[1]);
-			rMax[2] = max(aMax[2], bMax[2]);
-			middle[0] = (rMin[0] + rMax[0]) * 0.5f;
-			middle[1] = (rMin[1] + rMax[1]) * 0.5f;
-			middle[2] = (rMin[2] + rMax[2]) * 0.5f;
+			AABB boxA, boxB;
+			sdfs[0]->Range(boxA);
+			sdfs[1]->Range(boxB);
+			box.rect[0][0] = min(boxA.rect[0][0], boxB.rect[0][0]);
+			box.rect[0][1] = min(boxA.rect[0][1], boxB.rect[0][1]);
+			box.rect[0][2] = min(boxA.rect[0][2], boxB.rect[0][2]);
+			box.rect[1][0] = max(boxA.rect[1][0], boxB.rect[1][0]);
+			box.rect[1][1] = max(boxA.rect[1][1], boxB.rect[1][1]);
+			box.rect[1][2] = max(boxA.rect[1][2], boxB.rect[1][2]);
+			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
+			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
+			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
+			return true;
 		}
 
 		Sdf* sdfs[2];
