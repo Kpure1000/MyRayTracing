@@ -54,6 +54,7 @@ namespace sdf
 				{
 					result.hitPoint = r.PointTo(result.t);
 					result.normal = (result.hitPoint - center) / radius;
+					GetSphereUV(result.u, result.v, result.normal);
 					return true;
 				}
 				result.t = (-b + sqrtf(discriminant)) / (2.0f * a);
@@ -61,6 +62,7 @@ namespace sdf
 				{
 					result.hitPoint = r.PointTo(result.t);
 					result.normal = (result.hitPoint - center) / radius;
+					GetSphereUV(result.u, result.v, result.normal);
 					return true;
 				}
 			}
@@ -97,6 +99,17 @@ namespace sdf
 		Vector3 center;
 
 		float radius;
+
+	private:
+
+		inline void GetSphereUV(float& u, float& v, const Vector3& normal)const
+		{
+			float cosY = normal[1];
+			float cosX = normal[0] / sqrt(normal[0] * normal[0] + normal[2] * normal[2]);
+			u = normal[2] > 0 ? acos(cosX) / Pi / 2 : 1 - acos(cosX) / Pi / 2;
+			v = acos(cosY) / Pi;
+		}
+
 	};
 
 	class SdfIntersection : public Sdf

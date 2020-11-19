@@ -96,7 +96,7 @@
       <Filter>头文件\util</Filter>
     </ClInclude>
     <ClInclude Include="BVH.h">
-      <Filter>头文件</Filter>
+      <Filter>头文件\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -35,8 +35,8 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth, int& deep
 	else
 	{
 		Vector3 sky = ray.Direction().Normalize();
-		float t = 0.9f * (sky[1] + 1.0f);
-		return (1.0f - t) * Vector3(0.9f, 0.9f, 0.9f) + t * Vector3(0.5f, 0.5f, 0.5f);
+		float t = 0.5f * (sky[1] + 1.0f);
+		return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.5f, 0.7f, 1.0f);
 		//return Vector3::Zero;
 	}
 

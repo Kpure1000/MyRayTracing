@@ -27,7 +27,19 @@ namespace ry
 			alpha((color & 0xff) / TO_RGB)
 		{}
 
-		float operator[](const int& index)
+		float& operator[](const int& index)
+		{
+			if (index >= 0 && index < 3)
+			{
+				return rgb[index];
+			}
+			if (index == 3)
+			{
+				return alpha;
+			}
+		}
+
+		float operator[](const int& index)const
 		{
 			if (index >= 0 && index < 3)
 			{
