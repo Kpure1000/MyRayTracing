@@ -70,11 +70,11 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 512; //  宽
-	int ny = 288; //  高
+	int nx = 300; //  宽
+	int ny = 300; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 50; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 20;
+	int ns = 300; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 50;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
@@ -103,29 +103,37 @@ int run(int threadIndex, ofstream& out)
 	//	//new Image_Texture("erath.jpg")
 	//)));
 
-	world->AddHitable(new Rect(new SdfRect_xy(-5.0f, 0.0f, 5.0f, 9.0f, -6.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
-	world->AddHitable(new Rect(new SdfRect_xy(-5.0f, 0.0f, 5.0f, 9.0f, 6.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+	world->AddHitable(new Rect(new SdfRect_xy(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
+		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
+	/*world->AddHitable(new Rect(new SdfRect_xy(-6.0f, 0.0f, 6.0f, 10.0f, 6.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));*/
 
-	world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -6.0f, 5.0f, 6.0f, 0.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
-	world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -6.0f, 5.0f, 6.0f, 10.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
+		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
+	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
+		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
 
-	world->AddHitable(new Rect(new SdfRect_yz(0.0f, -6.0f, 10.0f, 6.0f, -5.0f),
-		new Lambertian(new Constant_Texture({ 0.0f,1.0f,0.0f }))));
-	world->AddHitable(new Rect(new SdfRect_yz(0.0f, -6.0f, 10.0f, 6.0f, 5.0f),
-		new Lambertian(new Constant_Texture({ 0.0f,0.0f,1.0f }))));
+	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
+		new Lambertian(new Constant_Texture({ 0.12f,0.45f,0.15f }))));
+	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
+		new Lambertian(new Constant_Texture({ 0.65f,0.05f,0.05f }))));
 
-	/*world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -5.0f, 5.0f, 5.0f, 7.0f),
-		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.0f)));*/
+	//world->AddHitable(new Rect(new SdfRect_xy(3, 1, 5, 3, -2), new Illumination(new Constant_Texture({ 1,1,1 }), 1.0f)));
+
+	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 550),
+		new Illumination(new Constant_Texture({ 15.0f,15.0f,15.0f }), 1.0f)));
 
 	//world->AddHitable(new Sphere(new SdfSphere({ 0,3.9f,-1 }, 1.75f),
 	//	new Lambertian(new Constant_Texture({ 0.7f,0.7f,0.7f }))));
 
-	world->AddHitable(new Sphere(new SdfSphere({ 0,3.9f,-1 }, 1.75f),
-		new Lambertian(new Image_Texture("erath.jpg"))));
+	/*world->AddHitable(new Sphere(new SdfSphere({ 277,277,277 }, 160.0f),
+		new Lambertian(new Image_Texture("erath.jpg"))));*/
+
+	world->AddHitable(new Sphere(new SdfSphere({ 137,90,167 }, 90.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+
+	world->AddHitable(new Sphere(new SdfSphere({ 380,120,350 }, 120.0f),
+		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));
 
 	/*world->AddHitable(new Sphere(new SdfSphere({ 5.0f,1.5f,-1 }, 1.75f),
 		new Metal(new Constant_Texture({ 0.8f,0.6f,0.2f }), 0.0f)));
@@ -153,17 +161,17 @@ int run(int threadIndex, ofstream& out)
 	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f),
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));*/
 
-	BVH* bvhWorld = new BVH(world->list, world->size, 0, 0);
+	//BVH* bvhWorld = new BVH(world->list, world->size, 0, 0);
 
 #pragma endregion
 
-	Vector3 lookFrom(3.0f, 6.0f, 4.0f);
-	Vector3 lookAt(0.0f, 3.9f, 0.0f);
-	float dist_to_focus = (lookFrom - lookAt).Magnitude();
+	Vector3 lookFrom(278.0f, 278.0f, -800.0f);
+	Vector3 lookAt(278.0f, 278.0f, 0.0f);
+	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 65, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 #ifdef REDUCE_INEGRATE
@@ -357,7 +365,7 @@ int run(int threadIndex, ofstream& out)
 							u = float(i + Drand48()) / float(nx);
 							v = float(j + Drand48()) / float(ny);
 							r = camera.GetRay(u, v);
-							color.rgb += RayTracer(r, bvhWorld, maxTraceDepth);
+							color.rgb += RayTracer(r, world, maxTraceDepth);
 						}
 						color.rgb /= float(ns);
 					}
@@ -488,6 +496,9 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			}
 			color.rgb /= float(ns);
 #endif // REDUCE_INEGRATE
+			color[0] = min(color[0], 1.0f);
+			color[1] = min(color[1], 1.0f);
+			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 			for (int ch = 0; ch < nChannel; ch++)
 			{

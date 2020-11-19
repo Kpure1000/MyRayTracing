@@ -126,7 +126,9 @@ namespace sdf
 			return true;
 		}
 
-		virtual bool Range(const float&, const float&)const = 0;
+	protected:
+
+		virtual bool isInRange(const float&, const float&)const = 0;
 
 	};
 
@@ -152,18 +154,20 @@ namespace sdf
 			if (t<tMin || t>tMax)return false;
 			float x = r.origin[0] + r.direction[0] * t;
 			float y = r.origin[1] + r.direction[1] * t;
-			bool isHited = Range(x, y);
+			bool isHited = isInRange(x, y);
+			if (isHited == false)return false;
 			result.u = (x - rect[0][0]) / (rect[1][0] - rect[0][0]);
 			result.v = (y - rect[0][1]) / (rect[1][1] - rect[0][1]);
 			result.t = t;
 			result.normal = r.direction[2] < 0 ? Vector3(0, 0, 1) : Vector3(0, 0, -1);
-			result.hitPoint = { x,y,rect[0][2] };
+			result.hitPoint = Vector3(x,y,rect[0][2]);
+			return isHited;
 		}
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
 			sdfResult = Vector3::Distance(p, (rect[0] + rect[1]) * 0.5f);
-			if (std::fabsf(p[2] - rect[0][2]) < 0.01f && Range(p[0], p[1]))
+			if (std::fabsf(p[2] - rect[0][2]) < 0.01f && isInRange(p[0], p[1]))
 			{
 				return true;
 			}
@@ -182,7 +186,7 @@ namespace sdf
 
 	protected:
 
-		virtual bool Range(const float& x, const float& y)const
+		virtual bool isInRange(const float& x, const float& y)const
 		{
 			return (x > rect[0][0] && x < rect[1][0] && y>rect[0][1] && y < rect[1][1]);
 		}
@@ -211,18 +215,20 @@ namespace sdf
 			if (t<tMin || t>tMax)return false;
 			float x = r.origin[0] + r.direction[0] * t;
 			float z = r.origin[2] + r.direction[2] * t;
-			bool isHited = Range(x, z);
+			bool isHited = isInRange(x, z);
+			if (!isHited)return false;
 			result.u = (x - rect[0][0]) / (rect[1][0] - rect[0][0]);
 			result.v = (z - rect[0][2]) / (rect[1][2] - rect[0][2]);
 			result.t = t;
 			result.normal = r.direction[1] < 0 ? Vector3(0, 1, 0) : Vector3(0, -1, 0);
 			result.hitPoint = { x,rect[0][1],z };
+			return isHited;
 		}
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
 			sdfResult = Vector3::Distance(p, (rect[0] + rect[1]) * 0.5f);
-			if (std::fabsf(p[2] - rect[0][2]) < 0.01f && Range(p[0], p[1]))
+			if (std::fabsf(p[1] - rect[0][1]) < 0.01f && isInRange(p[0], p[2]))
 			{
 				return true;
 			}
@@ -241,7 +247,7 @@ namespace sdf
 
 	protected:
 
-		virtual bool Range(const float& x, const float& z)const
+		virtual bool isInRange(const float& x, const float& z)const
 		{
 			return (x > rect[0][0] && x < rect[1][0] && z>rect[0][2] && z < rect[1][2]);
 		}
@@ -270,18 +276,20 @@ namespace sdf
 			if (t<tMin || t>tMax)return false;
 			float y = r.origin[1] + r.direction[1] * t;
 			float z = r.origin[2] + r.direction[2] * t;
-			bool isHited = Range(y, z);
+			bool isHited = isInRange(y, z);
+			if (!isHited)return false;
 			result.u = (y - rect[0][1]) / (rect[1][1] - rect[0][1]);
 			result.v = (z - rect[0][2]) / (rect[1][2] - rect[0][2]);
 			result.t = t;
 			result.normal = r.direction[0] < 0 ? Vector3(1, 0, 0) : Vector3(-1, 0, 0);
 			result.hitPoint = { rect[0][0],y,z };
+			return isHited;
 		}
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
 			sdfResult = Vector3::Distance(p, (rect[0] + rect[1]) * 0.5f);
-			if (std::fabsf(p[2] - rect[0][2]) < 0.01f && Range(p[0], p[1]))
+			if (std::fabsf(p[0] - rect[0][0]) < 0.01f && isInRange(p[1], p[2]))
 			{
 				return true;
 			}
@@ -300,7 +308,7 @@ namespace sdf
 
 	protected:
 
-		virtual bool Range(const float& y, const float& z)const
+		virtual bool isInRange(const float& y, const float& z)const
 		{
 			return (y > rect[0][1] && y < rect[1][1] && z>rect[0][2] && z < rect[1][2]);
 		}

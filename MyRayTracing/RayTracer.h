@@ -31,15 +31,14 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth, int& deep
 		else
 		{
 			return emitted;
-
 		}
 	}
 	else
 	{
-		Vector3 sky = ray.Direction().Normalize();
+		/*Vector3 sky = ray.Direction().Normalize();
 		float t = 0.5f * (sky[1] + 1.0f);
-		return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.5f, 0.7f, 1.0f);
-		//return Vector3::Zero;
+		return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.5f, 0.7f, 1.0f);*/
+		return Vector3::Zero;
 	}
 
 }
@@ -63,10 +62,10 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth)
 	}
 	else
 	{
-		Vector3 sky = ray.Direction().Normalize();
+		/*Vector3 sky = ray.Direction().Normalize();
 		float t = 0.9f * (sky[1] + 1.0f);
-		return (1.0f - t) * Vector3(0.9f, 0.9f, 0.9f) + t * Vector3(0.5f, 0.5f, 0.5f);
-		//return Vector3::Zero;
+		return (1.0f - t) * Vector3(0.9f, 0.9f, 0.9f) + t * Vector3(0.5f, 0.5f, 0.5f);*/
+		return Vector3::Zero;
 	}
 
 }

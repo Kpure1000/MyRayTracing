@@ -1,6 +1,7 @@
 #ifndef MATERIAL_H
 #define MATERIAL_H
 #include"Ray.h"
+#include"RayMath.h"
 #include"Hitable.h"
 #include"Texture.h"
 #include<iostream>
@@ -150,7 +151,7 @@ namespace ry
 		
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));
+			/*attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));*/
 			return false;
 		}
 

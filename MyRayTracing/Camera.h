@@ -34,7 +34,7 @@ namespace ry
 			float half_width = aspect * half_height;
 			w = Vector3::Normalize((lookFrom - lookAt));
 			u = Vector3::Normalize(Vector3::Cross(upDir, w));
-			v = Vector3::Normalize(Vector3::Cross(w, u));
+			v = Vector3::Cross(w, u);
 			left_bottom_corner = origin - w * focus_dist - half_width * focus_dist * u
 				- half_height * focus_dist * v;
 			horizontal = 2 * half_width * u * focus_dist;
