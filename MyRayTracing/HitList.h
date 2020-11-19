@@ -1,6 +1,7 @@
 #ifndef HITLIST_H
 #define HITLIST_H
 #include "Hitable.h"
+#include"AABB.h"
 namespace ry
 {
 	class HitList : public Hitable
@@ -57,7 +58,31 @@ namespace ry
 			material = mat;
 		}
 
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			if (size < 1)return false;
+			AABB tmpBox;
+			bool first_true = list[0]->GetBBox(t0, t1, tmpBox);
+			if (!first_true)
+				return false;
+			else
+				box = tmpBox;
+			for (int i = 0; i < size; i++)
+			{
+				if (list[0]->GetBBox(t0, t1, tmpBox)) 
+				{
+					box = AABB::Surrounding(box, tmpBox);
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
 		Hitable** list;
+
 		int size;
 		int maxSize;
 

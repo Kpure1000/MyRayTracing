@@ -47,10 +47,21 @@ namespace ry
 			return true;
 		}
 
-		/*rect[0] = rect_min
-		* rect[1] = rect_max
-		* rect[2] = rect_middle
-		*/
+		static AABB Surrounding(const AABB& boxA, const AABB& boxB)
+		{
+			Vector3 pMin(
+				std::fmin(boxA.rect[0][0], boxB.rect[0][0]),
+				std::fmin(boxA.rect[0][1], boxB.rect[0][1]),
+				std::fmin(boxA.rect[0][2], boxB.rect[0][2])
+			);
+			Vector3 pMax(
+				std::fmax(boxA.rect[1][0], boxB.rect[1][0]),
+				std::fmax(boxA.rect[1][1], boxB.rect[1][1]),
+				std::fmax(boxA.rect[1][2], boxB.rect[1][2])
+			);
+			return AABB(pMin, pMax);
+		}
+
 		Vector3 rect[3];
 
 	};

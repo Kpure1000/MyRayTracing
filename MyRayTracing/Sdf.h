@@ -24,12 +24,7 @@ namespace sdf
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const = 0;
 
-		virtual bool Range(AABB& box)
-		{
-			return true;
-		}
-
-		virtual bool Range(float t0, float t1, AABB& box)
+		virtual bool GetBBox(float t0, float t1, AABB& box)
 		{
 			return true;
 		}
@@ -82,9 +77,10 @@ namespace sdf
 			{
 				return true;
 			}
+			return false;
 		}
 
-		virtual bool Range(AABB& box)
+		virtual bool GetBBox(float t0, float t1, AABB& box)
 		{
 			box.rect[0][0] = center[0] - radius;
 			box.rect[0][1] = center[1] - radius;
@@ -116,10 +112,8 @@ namespace sdf
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
 		{
-			float disA, disB; //  ¾àÀë
 			HitRecord resA = result, resB = result; //  Åö×²½á¹û
 			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
-			float discriminant;
 			isHitA = sdfs[0]->Hit(r, tMin, tMax, resA, sdfRec);
 			isHitB = sdfs[1]->Hit(r, tMin, tMax, resB, sdfRec);
 			float sdfResult;
@@ -171,11 +165,11 @@ namespace sdf
 				&& sdfs[1]->sdf(p, sdfResult);
 		}
 
-		virtual bool Range(AABB& box)
+		virtual bool GetBBox(float t0, float t1, AABB& box)
 		{
 			AABB boxA, boxB;
-			sdfs[0]->Range(boxA);
-			sdfs[1]->Range(boxB);
+			sdfs[0]->GetBBox(t0,t1,boxA);
+			sdfs[1]->GetBBox(t0,t1,boxB);
 			box.rect[0][0] = max(boxA.rect[0][0], boxB.rect[0][0]);
 			box.rect[0][1] = max(boxA.rect[0][1], boxB.rect[0][1]);
 			box.rect[0][2] = max(boxA.rect[0][2], boxB.rect[0][2]);
@@ -213,11 +207,11 @@ namespace sdf
 			return true;
 		}
 
-		virtual bool Range(AABB& box)
+		virtual bool GetBBox(float t0, float t1, AABB& box)
 		{
 			AABB boxA, boxB;
-			sdfs[0]->Range(boxA);
-			sdfs[1]->Range(boxB);
+			sdfs[0]->GetBBox(t0,t1,boxA);
+			sdfs[1]->GetBBox(t0,t1,boxB);
 			box.rect[0][0] = min(boxA.rect[0][0], boxB.rect[0][0]);
 			box.rect[0][1] = min(boxA.rect[0][1], boxB.rect[0][1]);
 			box.rect[0][2] = min(boxA.rect[0][2], boxB.rect[0][2]);

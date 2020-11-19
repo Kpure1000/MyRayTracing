@@ -29,6 +29,11 @@ namespace ry
 			material = mat;
 		}
 
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			return sdf->GetBBox(t0,t1,box);
+		}
+
 	};
 }
 #endif // !LIGHT_H

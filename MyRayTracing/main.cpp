@@ -5,6 +5,7 @@
 #include<thread>
 #include<stb/stb_image_write.h>
 #include<algorithm>
+
 #include"RayTracer.h"
 #include"Texture.h"
 
@@ -22,6 +23,7 @@ using namespace std;
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
+
 
 HitList* randomScence(int maxSize, int randomIndex)
 {
@@ -54,8 +56,8 @@ HitList* randomScence(int maxSize, int randomIndex)
 				}
 				else
 				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2), 
-						new Dielectric(new Constant_Texture({ 1,1,1 }), 1.5));
+					list[i++] = new Sphere(new SdfSphere(center, 0.2f), 
+						new Dielectric(new Constant_Texture({ 1,1,1 }), 1.5f));
 				}
 			}
 		}
@@ -71,7 +73,7 @@ int run(int threadIndex, ofstream& out)
 	int nx = 512; //  宽
 	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 500; //  抗锯齿(蒙特卡洛采样)
+	int ns = 50; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
@@ -129,7 +131,7 @@ int run(int threadIndex, ofstream& out)
 	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f),
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));*/
 
-	
+	BVH* bvhWorld = new BVH(world->list, world->size, 0, 0);
 
 #pragma endregion
 
@@ -305,7 +307,7 @@ int run(int threadIndex, ofstream& out)
 			}, &curRate).detach();
 			int deep = 1;
 			int intersectionTimes = 0;
-			int tryNs = min(ns, max(10, ns / 10));
+			int tryNs = min(ns, max(20, ns / 10));
 			float u, v;
 			for (int j = 0; j < ny; j++)
 			{
@@ -333,7 +335,7 @@ int run(int threadIndex, ofstream& out)
 							u = float(i + Drand48()) / float(nx);
 							v = float(j + Drand48()) / float(ny);
 							r = camera.GetRay(u, v);
-							color.rgb += RayTracer(r, world, maxTraceDepth);
+							color.rgb += RayTracer(r, bvhWorld, maxTraceDepth);
 						}
 						color.rgb /= float(ns);
 					}
@@ -417,7 +419,7 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 	Ray r;
 	int deep = 1;
 	int intersectionTimes = 0;
-	int tryNs = min(ns, max(10, ns / 10));
+	int tryNs = min(ns, max(20, ns / 10));
 	float u, v;
 	for (int j = start; j < end; j++)
 	{

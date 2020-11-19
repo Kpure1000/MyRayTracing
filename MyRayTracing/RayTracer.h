@@ -8,6 +8,8 @@
 #include"Camera.h"
 #include"Color.h"
 
+#include"BVH.h"
+
 #include"IntersectionHit.h"
 
 using namespace ry;

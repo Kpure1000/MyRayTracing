@@ -1,6 +1,7 @@
 #ifndef HITABLE_H
 #define HITABLE_H
 #include"Ray.h"
+#include"AABB.h"
 namespace sdf
 {
 	class Sdf;
@@ -36,7 +37,12 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const = 0;
 
-		virtual void SetMaterial(Material* mat) = 0;
+		virtual void SetMaterial(Material* mat)
+		{
+			material = mat;
+		}
+
+		virtual bool GetBBox(float t0, float t1, AABB& box)const = 0;
 
 		Material* material;
 
