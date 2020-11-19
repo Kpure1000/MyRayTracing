@@ -158,6 +158,7 @@
     <ClInclude Include="Ray.h" />
     <ClInclude Include="RayMath.h" />
     <ClInclude Include="RayTracer.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Texture.h" />

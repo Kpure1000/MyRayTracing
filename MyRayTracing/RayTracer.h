@@ -4,6 +4,7 @@
 #include"RayMath.h"
 #include"Material.h"
 #include"Sphere.h"
+#include"Rect.h"
 #include"Light.h"
 #include"Camera.h"
 #include"Color.h"
@@ -30,6 +31,7 @@ Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth, int& deep
 		else
 		{
 			return emitted;
+
 		}
 	}
 	else

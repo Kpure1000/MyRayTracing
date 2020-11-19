@@ -17,7 +17,7 @@
 #define MULTI_THREAD 1
 
 //采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-#define REDUCE_INEGRATE
+//#define REDUCE_INEGRATE
 
 using namespace std;
 
@@ -70,10 +70,10 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 1920; //  宽
-	int ny = 1080; //  高
+	int nx = 512; //  宽
+	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 400; //  抗锯齿(蒙特卡洛采样)
+	int ns = 50; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 20;
 
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
@@ -85,26 +85,44 @@ int run(int threadIndex, ofstream& out)
 
 	HitList* world = NULL;
 	int MaxWorldSize = 500;
-	int objNumSq = 7;
+	int objNumSq = 0;
 	world = randomScence(MaxWorldSize, objNumSq);
 
-	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian(
-		/*new Check_Texture([](const float&u, const float&v, const Vector3&p)->Vector3{
-			float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
-			if (sine > 0)
-			{
-				return { 0.25f,0.65f,0.1f };
-			}
-			else
-			{
-				return { 0.0f,0.0f,0.0f };
-			}
-			})*/
-		new Image_Texture("erath.jpg")
-	)));
+	//world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian(
+	//	new Check_Texture([](const float&u, const float&v, const Vector3&p)->Vector3{
+	//		float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
+	//		if (sine > 0)
+	//		{
+	//			return { 0.25f,0.65f,0.1f };
+	//		}
+	//		else
+	//		{
+	//			return { 0.0f,0.0f,0.0f };
+	//		}
+	//		})
+	//	//new Image_Texture("erath.jpg")
+	//)));
 
-	/*world->AddHitable(new Sphere(new SdfSphere({ 0,1.5f,-1 }, 1.75f),
-		new Lambertian(new Constant_Texture({ 0.7f,0.7f,0.7f }))));*/
+	world->AddHitable(new Rect(new SdfRect_xy(-5.0f, 0.0f, 5.0f, 9.0f, -6.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+	world->AddHitable(new Rect(new SdfRect_xy(-5.0f, 0.0f, 5.0f, 9.0f, 6.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+
+	world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -6.0f, 5.0f, 6.0f, 0.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+	world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -6.0f, 5.0f, 6.0f, 10.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+
+	world->AddHitable(new Rect(new SdfRect_yz(0.0f, -6.0f, 10.0f, 6.0f, -5.0f),
+		new Lambertian(new Constant_Texture({ 0.0f,1.0f,0.0f }))));
+	world->AddHitable(new Rect(new SdfRect_yz(0.0f, -6.0f, 10.0f, 6.0f, 5.0f),
+		new Lambertian(new Constant_Texture({ 0.0f,0.0f,1.0f }))));
+
+	/*world->AddHitable(new Rect(new SdfRect_xz(-5.0f, -5.0f, 5.0f, 5.0f, 7.0f),
+		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.0f)));*/
+
+	//world->AddHitable(new Sphere(new SdfSphere({ 0,3.9f,-1 }, 1.75f),
+	//	new Lambertian(new Constant_Texture({ 0.7f,0.7f,0.7f }))));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 0,3.9f,-1 }, 1.75f),
 		new Lambertian(new Image_Texture("erath.jpg"))));
@@ -118,8 +136,8 @@ int run(int threadIndex, ofstream& out)
 	/*world->AddHitable(new Light(new SdfSphere({ 20.0f,30.0f, 0.0f }, 20.3f),
 		new Illumination(new Constant_Texture({ 1.0f,0.0f,0.0f }), 1.0f)));*/
 
-	world->AddHitable(new Light(new SdfSphere({ 0.0f,36.05f, 0.0f }, 20.3f),
-		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.0f)));
+	/*world->AddHitable(new Light(new SdfSphere({ 0.0f,36.05f, 0.0f }, 3.3f),
+		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.0f)));*/
 
 	/*world->AddHitable(new Light(new SdfSphere({ -20.0f,30.0f, 0.0f }, 20.3f),
 		new Illumination(new Constant_Texture({ 0.0f,0.0f,1.0f }), 1.0f)));*/
@@ -139,13 +157,13 @@ int run(int threadIndex, ofstream& out)
 
 #pragma endregion
 
-	Vector3 lookFrom(3.0f, 7.0f, 5.5f);
-	Vector3 lookAt(-0.2f, 3.9f, -1.0f);
+	Vector3 lookFrom(3.0f, 6.0f, 4.0f);
+	Vector3 lookAt(0.0f, 3.9f, 0.0f);
 	float dist_to_focus = (lookFrom - lookAt).Magnitude();
 	float aperture = 0.0f;
 	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
 	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 25, float(nx) / float(ny), aperture, dist_to_focus);
+		{ 0,1,0 }, 65, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 #ifdef REDUCE_INEGRATE
