@@ -25,6 +25,11 @@ public:
 		return camera;
 	}
 
+	Skybox* GetSkybox()
+	{
+		return skybox;
+	}
+
 	void LoadTriBall();
 
 	void LoadIntersectionBall();
@@ -50,6 +55,8 @@ private:
 	HitList* world;
 
 	Camera* camera;
+
+	Skybox* skybox;
 
 };
 

@@ -48,7 +48,7 @@ void Scence::LoadCheckingTexture()
 	world = randomScence(10, 0);
 	world->AddHitable(new Sphere(
 		new SdfSphere({ 0, 1000.5f, 1.0f }, 1000.0f), new Lambertian(
-			new Check_Texture([](const float& u, const float& v, const Vector3& p)->Vector3 {
+			new Customize_Texture([](const float& u, const float& v, const Vector3& p)->Vector3 {
 				float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
 				if (sine > 0)
 				{
@@ -69,11 +69,14 @@ void Scence::LoadPerlinNoise()
 
 void Scence::LoadCornellBox()
 {
+	// camera init
 	Vector3 lookFrom(278.0f, 278.0f, -800.0f);
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
 	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
+
+	// world init
 	world = randomScence(30, 0);
 	world->AddHitable(new Rect(new SdfRect_xy(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
 		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
@@ -91,11 +94,21 @@ void Scence::LoadCornellBox()
 	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 550),
 		new Illumination(new Constant_Texture({ 15.0f,15.0f,15.0f }), 1.0f)));
 	world->AddHitable(new Sphere(new SdfSphere({ 137,90,167 }, 90.0f),
-			new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 380,120,350 }, 120.0f),
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));
 
+	// skybox init
+	skybox = new Skybox(new Illumination(
+		/*new Customize_Texture(
+			[](const float& u, const float& v, const Vector3& p)->Vector3
+			{
+				float t = 0.5f * (p[1] + 1.0f);
+				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.7f, 1.0f);
+			})*/
+		new Image_Texture("earth.jpg")
+		, 1.0f));
 }
 
 HitList* Scence::randomScence(int maxSize, int randomIndex)

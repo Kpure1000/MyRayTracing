@@ -8,6 +8,7 @@
 #include"IntersectionHit.h"
 #include"UnionHit.h"
 #include"Rect.h"
+#include"Skybox.h"
 
 #include"Camera.h"
 #include"Material.h"
@@ -16,12 +17,13 @@
 
 #include"BVH.h"
 
+class Scence;
+
 namespace ry
 {
+	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth);
 
-	Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth, int& deep);
-
-	Vector3 RayTracer(const Ray& ray, Hitable* world, const int& maxDepth);
+	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth, int& deep);
 
 }
 

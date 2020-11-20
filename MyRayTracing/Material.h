@@ -159,6 +159,7 @@ namespace ry
 		virtual Vector3 Emitted(const float& u, const float& v, const Vector3& pos)const
 		{
 			return albedo->Value(u, v, pos) * std::max(0.0f, std::min(1.0f, intensity));
+
 		}
 
 		//Œ∆¿Ì

@@ -1,45 +1,35 @@
 #ifndef SKYBOX_H
 #define SKYBOX_H
-#include"Hitable.h"
+#include"Material.h"
 #include"Sdf.h"
 using namespace sdf;
 namespace ry
 {
-	class Skybox : public Hitable
+
+	/*实际上是一个球（以后考虑投影到box上，方便别人做的天空盒兼容）*/
+	class Skybox final
 	{
 	public:
-		Skybox() {}
+		Skybox() :material(nullptr) {}
 
-		Skybox(SdfSphere* sphere)
-			: Hitable(sphere)
+		Skybox(Material* mat) :material(mat)
 		{
+
 		}
 
-		Skybox(SdfSphere* sphere, Material* mat)
-			: Hitable(sphere, mat)
+		Vector3 GetSky(const Vector3& normal)
 		{
-		}
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
-		{
-			SdfRecord sdfR;
-			if (material != nullptr)
+			if (material)
 			{
-				rec.mat = material;
+				float u, v;
+				SdfSphere::GetSphereUV(u, v, normal);
+				return material->Emitted(u, v, normal);
 			}
-			return sdf->Hit(r, tMin, tMax, rec, sdfR);
+			return { 0,0,0 };
 		}
 
-		virtual void SetMaterial(Material* mat)
-		{
-			material = mat;
-		}
+		Material* material;
 
-		virtual bool GetBBox(float t0, float t1, AABB& box)const
-		{
-			return sdf->GetBBox(t0, t1, box);
-		}
 	};
 
 }

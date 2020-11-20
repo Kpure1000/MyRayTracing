@@ -6,6 +6,7 @@
 #include<stb/stb_image_write.h>
 #include<algorithm>
 
+#include "RayTracer.h"
 #include "Scence.h"
 
 #ifndef __linux__
@@ -21,7 +22,7 @@
 using namespace std;
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
-	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
+	Camera* camera, Scence* scence, int maxTraceDepth, float* endNumber);
 
 int run(int threadIndex, ofstream& out)
 {
@@ -105,7 +106,7 @@ int run(int threadIndex, ofstream& out)
 			endFlag[curTask] = 0.0f;
 			rtThread[curTask] = new thread(RayTraceThread,
 				(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-				nx, ny, nChannel, ns, camera, world, maxTraceDepth, &endFlag[curTask]);
+				nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[curTask]);
 		}
 
 		for (int i = 0; i < threadNum; i++)
@@ -134,7 +135,7 @@ int run(int threadIndex, ofstream& out)
 						endFlag[i] = 0.0f;
 						rtThread[i] = new thread(RayTraceThread,
 							(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-							nx, ny, nChannel, ns, camera, world, maxTraceDepth, &endFlag[i]);
+							nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[i]);
 						curTask++;
 						curEndTask++;
 						rtThread[i]->detach();
@@ -224,7 +225,7 @@ int run(int threadIndex, ofstream& out)
 						u = float(i + Drand48()) / float(nx);
 						v = float(j + Drand48()) / float(ny);
 						r = camera->GetRay(u, v);
-						color.rgb += RayTracer(r, world, maxTraceDepth, deep);
+						color.rgb += RayTracer(r, &scence, maxTraceDepth, deep);
 						if (deep > 1)intersectionTimes++;
 					}
 					//如果大概率深度大于1
@@ -236,7 +237,7 @@ int run(int threadIndex, ofstream& out)
 							u = float(i + Drand48()) / float(nx);
 							v = float(j + Drand48()) / float(ny);
 							r = camera->GetRay(u, v);
-							color.rgb += RayTracer(r, world, maxTraceDepth);
+							color.rgb += RayTracer(r, &scence, maxTraceDepth);
 						}
 						color.rgb /= float(ns);
 					}
@@ -251,7 +252,7 @@ int run(int threadIndex, ofstream& out)
 						u = float(i + RayMath::Drand48()) / float(nx);
 						v = float(j + RayMath::Drand48()) / float(ny);
 						r = camera->GetRay(u, v);
-						color.rgb += RayTracer(r, world, maxTraceDepth);
+						color.rgb += RayTracer(r, &scence, maxTraceDepth);
 					}
 					color.rgb /= float(ns);
 #endif // REDUCE_INEGRATE
@@ -310,7 +311,7 @@ int main()
 }
 
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
-	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber)
+	Camera* camera, Scence* scence, int maxTraceDepth, float* endNumber)
 {
 	Color color;
 	Ray r;
@@ -332,7 +333,7 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 				u = float(i + RayMath::Drand48()) / float(nx);
 				v = float(j + RayMath::Drand48()) / float(ny);
 				r = camera->GetRay(u, v);
-				color.rgb += RayTracer(r, world, maxTraceDepth, deep);
+				color.rgb += RayTracer(r, scence, maxTraceDepth, deep);
 				if (deep > 1)intersectionTimes++;
 			}
 			//如果大概率深度大于1
@@ -344,7 +345,7 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 					u = float(i + RayMath::Drand48()) / float(nx);
 					v = float(j + RayMath::Drand48()) / float(ny);
 					r = camera->GetRay(u, v);
-					color.rgb += RayTracer(r, world, maxTraceDepth);
+					color.rgb += RayTracer(r, scence, maxTraceDepth);
 				}
 				color.rgb /= float(ns);
 			}
@@ -359,7 +360,7 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 				u = float(i + RayMath::Drand48()) / float(nx);
 				v = float(j + RayMath::Drand48()) / float(ny);
 				r = camera->GetRay(u, v);
-				color.rgb += RayTracer(r, world, maxTraceDepth);
+				color.rgb += RayTracer(r, scence, maxTraceDepth);
 			}
 			color.rgb /= float(ns);
 #endif // REDUCE_INEGRATE

@@ -100,9 +100,7 @@ namespace sdf
 
 		float radius;
 
-	private:
-
-		inline void GetSphereUV(float& u, float& v, const Vector3& normal)const
+		inline static void GetSphereUV(float& u, float& v, const Vector3& normal)
 		{
 			float cosY = normal[1];
 			float cosX = normal[0] / sqrt(normal[0] * normal[0] + normal[2] * normal[2]);
