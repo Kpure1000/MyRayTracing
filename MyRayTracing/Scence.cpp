@@ -70,11 +70,11 @@ void Scence::LoadPerlinNoise()
 void Scence::LoadCornellBox()
 {
 	// camera init
-	Vector3 lookFrom(278.0f, 278.0f, -800.0f);
+	Vector3 lookFrom(278.0f, 278.0f, -900.0f);
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
 
 	// world init
 	world = randomScence(30, 0);
@@ -105,9 +105,9 @@ void Scence::LoadCornellBox()
 			[](const float& u, const float& v, const Vector3& p)->Vector3
 			{
 				float t = 0.5f * (p[1] + 1.0f);
-				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.7f, 1.0f);
+				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
 			})*/
-		new Image_Texture("earth.jpg")
+		new Image_Texture("xinminxuehui.jpg")
 		, 1.0f));
 }
 

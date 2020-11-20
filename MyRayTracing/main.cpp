@@ -17,7 +17,7 @@
 #define MULTI_THREAD 1
 
 //采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-//#define REDUCE_INEGRATE
+#define REDUCE_INEGRATE
 
 using namespace std;
 
@@ -28,11 +28,11 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 300; //  宽
-	int ny = 300; //  高
+	int nx = 1920; //  宽
+	int ny = 1080; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 200; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 3;
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 5;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 	HitList* world = NULL;
@@ -222,8 +222,8 @@ int run(int threadIndex, ofstream& out)
 					for (int k = 0; k < tryNs; k++)
 					{
 						deep = 1;
-						u = float(i + Drand48()) / float(nx);
-						v = float(j + Drand48()) / float(ny);
+						u = float(i + RayMath::Drand48()) / float(nx);
+						v = float(j + RayMath::Drand48()) / float(ny);
 						r = camera->GetRay(u, v);
 						color.rgb += RayTracer(r, &scence, maxTraceDepth, deep);
 						if (deep > 1)intersectionTimes++;
@@ -234,8 +234,8 @@ int run(int threadIndex, ofstream& out)
 						//继续采样
 						for (int k = 0; k < ns - tryNs; k++)
 						{
-							u = float(i + Drand48()) / float(nx);
-							v = float(j + Drand48()) / float(ny);
+							u = float(i + RayMath::Drand48()) / float(nx);
+							v = float(j + RayMath::Drand48()) / float(ny);
 							r = camera->GetRay(u, v);
 							color.rgb += RayTracer(r, &scence, maxTraceDepth);
 						}
