@@ -1,6 +1,5 @@
 #ifndef COLOR_H
 #define COLOR_H
-#include"Vector3.h"
 #include"RayMath.h"
 namespace ry
 {

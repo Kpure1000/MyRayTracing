@@ -141,8 +141,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RayMath.cpp" />
+    <ClCompile Include="RayTracer.cpp" />
+    <ClCompile Include="Scence.cpp" />
     <ClCompile Include="stb_init.cpp" />
     <ClCompile Include="ThreadPool.cpp" />
+    <ClCompile Include="Vector3.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
@@ -159,7 +163,9 @@
     <ClInclude Include="RayMath.h" />
     <ClInclude Include="RayTracer.h" />
     <ClInclude Include="Rect.h" />
+    <ClInclude Include="Scence.h" />
     <ClInclude Include="Sdf.h" />
+    <ClInclude Include="Skybox.h" />
     <ClInclude Include="Sphere.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="ThreadPool.h" />

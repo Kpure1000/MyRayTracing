@@ -6,8 +6,7 @@
 #include<stb/stb_image_write.h>
 #include<algorithm>
 
-#include"RayTracer.h"
-#include"Texture.h"
+#include "Scence.h"
 
 #ifndef __linux__
 #include<Windows.h>
@@ -24,48 +23,6 @@ using namespace std;
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber);
 
-
-HitList* randomScence(int maxSize, int randomIndex)
-{
-	Hitable** list = new Hitable * [maxSize + 1];
-	
-	int i = 0;
-	for (int x = -randomIndex; x < randomIndex; x++)
-	{
-		for (int y = -randomIndex; y < randomIndex; y++)
-		{
-			float choose_mat = Drand48();
-			Vector3 center(x + 0.9f * Drand48(), 0.2f, y + 0.9f * Drand48());
-			if ((center - Vector3(4.0f, 0.2f, 0.0f)).Magnitude() > 0.9f)
-			{
-				if (choose_mat < 0.7f)
-				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2f), new Lambertian(
-						new Constant_Texture({ (float)Drand48() * (float)Drand48() ,
-						(float)Drand48() * (float)Drand48() ,
-						(float)Drand48() * (float)Drand48() })));
-				}
-				else if (choose_mat < 0.85f)
-				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2f), new Metal(
-						new Constant_Texture({
-						0.5f * (float)(1 + Drand48()),
-						0.5f * (float)(1 + Drand48()),
-						0.5f * (float)(1 + Drand48()) }),
-						0.5f * Drand48()));
-				}
-				else
-				{
-					list[i++] = new Sphere(new SdfSphere(center, 0.2f), 
-						new Dielectric(new Constant_Texture({ 1,1,1 }), 1.5f));
-				}
-			}
-		}
-	}
-
-	return new HitList(list, i, maxSize);
-}
-
 int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
@@ -73,105 +30,19 @@ int run(int threadIndex, ofstream& out)
 	int nx = 300; //  宽
 	int ny = 300; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 300; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 50;
-
+	int ns = 200; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 3;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
-#pragma region worldInit
-
-	//int hitableNum = 4;
-	//HitList* world = new HitList(hitableNum);
-
 	HitList* world = NULL;
-	int MaxWorldSize = 500;
-	int objNumSq = 0;
-	world = randomScence(MaxWorldSize, objNumSq);
+	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
+	scence.LoadCornellBox();
+	world = scence.GetWorld();
+	Camera* camera = scence.GetCamera();
 
-	//world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,-1 }, 1000.0f), new Lambertian(
-	//	new Check_Texture([](const float&u, const float&v, const Vector3&p)->Vector3{
-	//		float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
-	//		if (sine > 0)
-	//		{
-	//			return { 0.25f,0.65f,0.1f };
-	//		}
-	//		else
-	//		{
-	//			return { 0.0f,0.0f,0.0f };
-	//		}
-	//		})
-	//	//new Image_Texture("erath.jpg")
-	//)));
+	if (camera == nullptr || world == nullptr)
+		return -1;
 
-	world->AddHitable(new Rect(new SdfRect_xy(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
-		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
-	/*world->AddHitable(new Rect(new SdfRect_xy(-6.0f, 0.0f, 6.0f, 10.0f, 6.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));*/
-
-	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
-		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
-	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
-		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
-
-	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
-		new Lambertian(new Constant_Texture({ 0.12f,0.45f,0.15f }))));
-	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
-		new Lambertian(new Constant_Texture({ 0.65f,0.05f,0.05f }))));
-
-	//world->AddHitable(new Rect(new SdfRect_xy(3, 1, 5, 3, -2), new Illumination(new Constant_Texture({ 1,1,1 }), 1.0f)));
-
-	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 550),
-		new Illumination(new Constant_Texture({ 15.0f,15.0f,15.0f }), 1.0f)));
-
-	//world->AddHitable(new Sphere(new SdfSphere({ 0,3.9f,-1 }, 1.75f),
-	//	new Lambertian(new Constant_Texture({ 0.7f,0.7f,0.7f }))));
-
-	/*world->AddHitable(new Sphere(new SdfSphere({ 277,277,277 }, 160.0f),
-		new Lambertian(new Image_Texture("erath.jpg"))));*/
-
-	world->AddHitable(new Sphere(new SdfSphere({ 137,90,167 }, 90.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
-
-	world->AddHitable(new Sphere(new SdfSphere({ 380,120,350 }, 120.0f),
-		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));
-
-	/*world->AddHitable(new Sphere(new SdfSphere({ 5.0f,1.5f,-1 }, 1.75f),
-		new Metal(new Constant_Texture({ 0.8f,0.6f,0.2f }), 0.0f)));
-
-	world->AddHitable(new Sphere(new SdfSphere({ -5,1.5f,-1 }, 1.75f),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)));*/
-
-	/*world->AddHitable(new Light(new SdfSphere({ 20.0f,30.0f, 0.0f }, 20.3f),
-		new Illumination(new Constant_Texture({ 1.0f,0.0f,0.0f }), 1.0f)));*/
-
-	/*world->AddHitable(new Light(new SdfSphere({ 0.0f,36.05f, 0.0f }, 3.3f),
-		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.0f)));*/
-
-	/*world->AddHitable(new Light(new SdfSphere({ -20.0f,30.0f, 0.0f }, 20.3f),
-		new Illumination(new Constant_Texture({ 0.0f,0.0f,1.0f }), 1.0f)));*/
-
-	/*world->AddHitable(new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)),
-		new Sphere(new SdfSphere({ 0.0f, 0.0f, 0.7f }, 1.0f), new Dielectric(new Constant_Texture({ 0.8f,0.8f,0.8f }), 1.2f)),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
-	));*/
-
-	/*world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));
-	world->AddHitable(new Sphere(new SdfSphere({ 0.0f,0.0f,0.7f }, 1.0f),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)));*/
-
-	//BVH* bvhWorld = new BVH(world->list, world->size, 0, 0);
-
-#pragma endregion
-
-	Vector3 lookFrom(278.0f, 278.0f, -800.0f);
-	Vector3 lookAt(278.0f, 278.0f, 0.0f);
-	float dist_to_focus = 10.0f;
-	float aperture = 0.0f;
-	//Camera camera({ -2.0f,-1.0f,-1.0f }, { 0,0,0.5f }, { 4.0f,0.0f,0.0f }, { 0.0f,2.0f,0.0f });
-	Camera camera(lookFrom, lookAt,
-		{ 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
 	Ray r;
 	Color color;
 #ifdef REDUCE_INEGRATE
@@ -187,7 +58,7 @@ int run(int threadIndex, ofstream& out)
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
 	cout << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
 		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
-	out << "场景体数量:" << (*world).size << ", 光圈: " << aperture << ".\n";
+	out << "场景体数量:" << (*world).size << ", 光圈: " << camera->aperture << ".\n";
 	if (nChannel > 4)
 	{
 		out << "颜色通道大于4, 退出.\n";
@@ -234,7 +105,7 @@ int run(int threadIndex, ofstream& out)
 			endFlag[curTask] = 0.0f;
 			rtThread[curTask] = new thread(RayTraceThread,
 				(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-				nx, ny, nChannel, ns, &camera, world, maxTraceDepth, &endFlag[curTask]);
+				nx, ny, nChannel, ns, camera, world, maxTraceDepth, &endFlag[curTask]);
 		}
 
 		for (int i = 0; i < threadNum; i++)
@@ -263,7 +134,7 @@ int run(int threadIndex, ofstream& out)
 						endFlag[i] = 0.0f;
 						rtThread[i] = new thread(RayTraceThread,
 							(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-							nx, ny, nChannel, ns, &camera, world, maxTraceDepth, &endFlag[i]);
+							nx, ny, nChannel, ns, camera, world, maxTraceDepth, &endFlag[i]);
 						curTask++;
 						curEndTask++;
 						rtThread[i]->detach();
@@ -352,7 +223,7 @@ int run(int threadIndex, ofstream& out)
 						deep = 1;
 						u = float(i + Drand48()) / float(nx);
 						v = float(j + Drand48()) / float(ny);
-						r = camera.GetRay(u, v);
+						r = camera->GetRay(u, v);
 						color.rgb += RayTracer(r, world, maxTraceDepth, deep);
 						if (deep > 1)intersectionTimes++;
 					}
@@ -364,7 +235,7 @@ int run(int threadIndex, ofstream& out)
 						{
 							u = float(i + Drand48()) / float(nx);
 							v = float(j + Drand48()) / float(ny);
-							r = camera.GetRay(u, v);
+							r = camera->GetRay(u, v);
 							color.rgb += RayTracer(r, world, maxTraceDepth);
 						}
 						color.rgb /= float(ns);
@@ -377,9 +248,9 @@ int run(int threadIndex, ofstream& out)
 					float u, v;
 					for (int k = 0; k < ns; k++)
 					{
-						u = float(i + Drand48()) / float(nx);
-						v = float(j + Drand48()) / float(ny);
-						r = camera.GetRay(u, v);
+						u = float(i + RayMath::Drand48()) / float(nx);
+						v = float(j + RayMath::Drand48()) / float(ny);
+						r = camera->GetRay(u, v);
 						color.rgb += RayTracer(r, world, maxTraceDepth);
 					}
 					color.rgb /= float(ns);
@@ -408,14 +279,12 @@ int run(int threadIndex, ofstream& out)
 	system("outImage.bmp");
 	free(imageData);
 
-	delete world;
-
 	return 0;
 }
 
 int main()
 {
-	Srand48((unsigned int)time(NULL));
+	RayMath::Srand48((unsigned int)time(NULL));
 	ifstream testReader("renderLog.txt");
 	string oldLog((std::istreambuf_iterator<char>(testReader)),
 		std::istreambuf_iterator<char>());
@@ -440,8 +309,6 @@ int main()
 	system("pause");
 }
 
-
-
 void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
 	Camera* camera, HitList* world, int maxTraceDepth, float* endNumber)
 {
@@ -462,8 +329,8 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			for (int k = 0; k < tryNs; k++)
 			{
 				deep = 1;
-				u = float(i + Drand48()) / float(nx);
-				v = float(j + Drand48()) / float(ny);
+				u = float(i + RayMath::Drand48()) / float(nx);
+				v = float(j + RayMath::Drand48()) / float(ny);
 				r = camera->GetRay(u, v);
 				color.rgb += RayTracer(r, world, maxTraceDepth, deep);
 				if (deep > 1)intersectionTimes++;
@@ -474,8 +341,8 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 				//继续采样
 				for (int k = 0; k < ns - tryNs; k++)
 				{
-					u = float(i + Drand48()) / float(nx);
-					v = float(j + Drand48()) / float(ny);
+					u = float(i + RayMath::Drand48()) / float(nx);
+					v = float(j + RayMath::Drand48()) / float(ny);
 					r = camera->GetRay(u, v);
 					color.rgb += RayTracer(r, world, maxTraceDepth);
 				}
@@ -489,8 +356,8 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			float u, v;
 			for (int k = 0; k < ns; k++)
 			{
-				u = float(i + Drand48()) / float(nx);
-				v = float(j + Drand48()) / float(ny);
+				u = float(i + RayMath::Drand48()) / float(nx);
+				v = float(j + RayMath::Drand48()) / float(ny);
 				r = camera->GetRay(u, v);
 				color.rgb += RayTracer(r, world, maxTraceDepth);
 			}

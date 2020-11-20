@@ -87,7 +87,7 @@ namespace ry
 
 		void BuildBVH(Hitable** list, int n, float t0, float t1, BNode* broot)
 		{
-			int axis = int(3 * Drand48());
+			int axis = int(3 * RayMath::Drand48());
 			if (axis == 0)
 				qsort(list, n, sizeof(Hitable*), [](const void* a, const void* b)->int
 					{

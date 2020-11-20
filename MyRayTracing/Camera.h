@@ -25,9 +25,10 @@ namespace ry
 		*/
 		Camera(const Vector3& lookFrom, const Vector3& lookAt, const Vector3& upDir,
 			const float& fov, const float& aspect,
-			const float& aperture, const float& focus_dist)
+			const float& Aperture, const float& focus_dist)
+			:aperture(Aperture)
 		{
-			lensRadius = aperture / 2.0f;
+			lensRadius = Aperture / 2.0f;
 			origin = lookFrom;
 			float theta = fov * Pi / 180;
 			float half_height = tan(theta / 2);
@@ -61,6 +62,8 @@ namespace ry
 
 		float lensRadius;
 
+		float aperture;
+
 	private:
 
 		Vector3 random_in_unit_disk()
@@ -68,7 +71,7 @@ namespace ry
 			Vector3 p;
 			do
 			{
-				p = 2.0f * Vector3(Drand48(), Drand48(), 0) - Vector3(1, 1, 0);
+				p = 2.0f * Vector3(RayMath::Drand48(), RayMath::Drand48(), 0) - Vector3(1, 1, 0);
 			} while (Vector3::Dot(p, p) >= 1.0f);
 			return p;
 		}

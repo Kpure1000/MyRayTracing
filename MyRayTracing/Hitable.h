@@ -1,6 +1,5 @@
 #ifndef HITABLE_H
 #define HITABLE_H
-#include"Ray.h"
 #include"AABB.h"
 namespace sdf
 {

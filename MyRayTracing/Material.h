@@ -40,11 +40,11 @@ namespace ry
 			Vector3 target;
 			if (normalTexture != nullptr) // 法线贴图
 			{
-				target = rec.hitPoint + normalTexture->Value(rec.u, rec.v, rec.hitPoint) + random_in_unit_ball();
+				target = rec.hitPoint + normalTexture->Value(rec.u, rec.v, rec.hitPoint) + RayMath::random_in_unit_ball();
 			}
 			else //  普通贴图
 			{
-				target = rec.hitPoint + rec.normal + random_in_unit_ball();
+				target = rec.hitPoint + rec.normal + RayMath::random_in_unit_ball();
 			}
 			scattered = Ray(rec.hitPoint, target - rec.hitPoint);
 			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
@@ -74,8 +74,8 @@ namespace ry
 		*/
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
-			scattered = Ray(rec.hitPoint, reflected + fuzz * randomUnitVector());
+			Vector3 reflected = RayMath::Reflect(rayIn.Direction(), rec.normal);
+			scattered = Ray(rec.hitPoint, reflected + fuzz * RayMath::randomUnitVector());
 			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 			return (Vector3::Dot(scattered.Direction(), rec.normal) > 0);
 		}
@@ -101,7 +101,7 @@ namespace ry
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
 			Vector3 refracted;
-			Vector3 reflected = Reflect(rayIn.Direction(), rec.normal);
+			Vector3 reflected = RayMath::Reflect(rayIn.Direction(), rec.normal);
 			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
 
 			float cosine;
@@ -110,18 +110,18 @@ namespace ry
 
 			if (Vector3::Dot(rayIn.Direction(), rec.normal) > 0)
 			{
-				isRefracted = Refract(rayIn.Direction(), -rec.normal, refractive_Indices, refracted);
+				isRefracted = RayMath::Refract(rayIn.Direction(), -rec.normal, refractive_Indices, refracted);
 				cosine = refractive_Indices * Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
 			else 
 			{
-				isRefracted = Refract(rayIn.Direction(), rec.normal, 1.0f / refractive_Indices, refracted);
+				isRefracted = RayMath::Refract(rayIn.Direction(), rec.normal, 1.0f / refractive_Indices, refracted);
 				cosine = -Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
 			}
 
 			if (isRefracted)
 			{
-				if (Drand48() <= Schlick(cosine, refractive_Indices))
+				if (RayMath::Drand48() <= RayMath::Schlick(cosine, refractive_Indices))
 				{
 					isRefracted = false;
 				}
@@ -141,6 +141,7 @@ namespace ry
 		float refractive_Indices;
 	};
 
+	/*自发光材质，给光源和天空盒用*/
 	class Illumination : public Material
 	{
 	public:
@@ -166,21 +167,7 @@ namespace ry
 		float intensity;
 	};
 
-	class Skybox : public Material
-	{
-	public:
 
-		Skybox() :albedo(nullptr) {}
-
-		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
-		{
-			attenuation = albedo->Value(0, 0, rec.hitPoint);
-			return false;
-		}
-
-		//纹理
-		Texture* albedo;
-	};
 
 }
 #endif
