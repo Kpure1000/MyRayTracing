@@ -367,9 +367,9 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			}
 			color.rgb /= float(ns);
 #endif // REDUCE_INEGRATE
-			//color[0] = min(color[0], 1.0f);
-			//color[1] = min(color[1], 1.0f);
-			//color[2] = min(color[2], 1.0f);
+			color[0] = min(color[0], 1.0f);
+			color[1] = min(color[1], 1.0f);
+			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 			for (int ch = 0; ch < nChannel; ch++)
 			{

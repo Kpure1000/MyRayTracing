@@ -5,6 +5,7 @@ namespace ry
 	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth)
 	{
 		HitRecord rec;
+		//注意这个tMin不能太小，否则可能出现自相交问题（见pbrt_cn p88)
 		if (world->GetWorld()->Hit(ray, 0.001f, MAX_FLOAT, rec))
 		{
 			Ray scattered;

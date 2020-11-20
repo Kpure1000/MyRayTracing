@@ -27,8 +27,8 @@ void Scence::LoadSomeBalls()
 	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 60, float(nx) / float(ny), aperture, dist_to_focus);
 
 	world = randomScence(10, 0);
-	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,0.0f }, 1000.8f), new Lambertian(
-		new Constant_Texture({ 0.6f,0.6f,0.6f }) //,0.1f
+	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,0.0f }, 1000.8f), new Metal(
+		new Constant_Texture({ 0.6f,0.6f,0.6f }) ,0.1f
 	)));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 2.02f,2.2f,-1.3f }, 1.0f), new Lambertian(
