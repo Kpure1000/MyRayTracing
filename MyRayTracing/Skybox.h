@@ -22,7 +22,7 @@ namespace ry
 			if (material)
 			{
 				float u, v;
-				SdfSphere::GetSphereUV(u, v, normal);
+				//SdfSphere::GetSphereUV(u, v, normal);
 				return material->Emitted(u, v, normal);
 			}
 			return { 0,0,0 };

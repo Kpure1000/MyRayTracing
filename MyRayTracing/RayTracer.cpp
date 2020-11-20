@@ -5,11 +5,11 @@ namespace ry
 	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth)
 	{
 		HitRecord rec;
-		if (world->GetWorld()->Hit(ray, 1e-6f, MAX_FLOAT, rec))
+		if (world->GetWorld()->Hit(ray, 0.001f, MAX_FLOAT, rec))
 		{
 			Ray scattered;
 			Vector3 attenuation;
-			Vector3 emitted = rec.mat->Emitted(0, 0, { 0,0,0 });
+			Vector3 emitted = rec.mat->Emitted(rec.u, rec.v, rec.hitPoint);
 			if (maxDepth > 0 && rec.mat->Scatter(ray, rec, attenuation, scattered))
 			{
 				return emitted + attenuation * RayTracer(scattered, world, maxDepth - 1);
@@ -33,11 +33,11 @@ namespace ry
 	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth, int& deep)
 	{
 		HitRecord rec;
-		if (world->GetWorld()->Hit(ray, 1e-6f, MAX_FLOAT, rec))
+		if (world->GetWorld()->Hit(ray, 0.001f, MAX_FLOAT, rec))
 		{
 			Ray scattered;
 			Vector3 attenuation;
-			Vector3 emitted = rec.mat->Emitted(0, 0, { 0,0,0 });
+			Vector3 emitted = rec.mat->Emitted(rec.u, rec.v, rec.hitPoint);
 			if (maxDepth > 0 && rec.mat->Scatter(ray, rec, attenuation, scattered))
 			{
 				deep++;

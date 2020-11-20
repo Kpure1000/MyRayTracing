@@ -30,7 +30,7 @@ public:
 		return skybox;
 	}
 
-	void LoadTriBall();
+	void LoadSomeBalls();
 
 	void LoadIntersectionBall();
 

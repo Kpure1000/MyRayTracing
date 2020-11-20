@@ -60,8 +60,7 @@ public:
 		Vector3 re;
 		do
 		{
-			re = 2.0f * Vector3(Drand48(),
-				Drand48(), Drand48()) - Vector3::One;
+			re = 2.0f * Vector3(Drand48(), Drand48(), Drand48()) - Vector3::One;
 		} while (re.Magnitude() > 1.0f);
 		return re;
 	}

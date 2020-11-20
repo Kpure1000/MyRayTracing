@@ -1,11 +1,13 @@
 #include "Scence.h"
 
 Scence::Scence()
+	: world(nullptr), camera(nullptr), skybox(nullptr)
 {
 }
 
 Scence::Scence(int Width, int Height, int nChannel, int SampleIndex, int MaxTracingDepth)
-	: nx(Width), ny(Height), nChannel(nChannel), ns(SampleIndex), maxTraceDepth(MaxTracingDepth)
+	: nx(Width), ny(Height), nChannel(nChannel), ns(SampleIndex), maxTraceDepth(MaxTracingDepth),
+	world(nullptr), camera(nullptr), skybox(nullptr)
 {
 }
 
@@ -13,15 +15,51 @@ Scence::~Scence()
 {
 	if (world)delete world;
 	if (camera)delete camera;
+	if (skybox)delete skybox;
 }
 
-void Scence::LoadTriBall()
+void Scence::LoadSomeBalls()
 {
-	world = randomScence(4, 0);
+	Vector3 lookFrom(0.5f, 2.2f, 4.0f);
+	Vector3 lookAt(0.0f, 1.5f, 0.0f);
+	float dist_to_focus = (lookAt - lookFrom).Magnitude();
+	float aperture = 0.0f;
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 60, float(nx) / float(ny), aperture, dist_to_focus);
+
+	world = randomScence(10, 0);
+	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,0.0f }, 1000.8f), new Lambertian(
+		new Constant_Texture({ 0.6f,0.6f,0.6f }) //,0.1f
+	)));
+
+	world->AddHitable(new Sphere(new SdfSphere({ 2.02f,2.2f,-1.3f }, 1.0f), new Lambertian(
+		new Constant_Texture({ 0.7f,0.2f,0.6f })
+	)));
+
+	world->AddHitable(new Sphere(new SdfSphere({ 0,2.2f,-1.3f }, 1.0f), new Metal(
+		new Constant_Texture({ 0.6f,0.8f,0.2f }),0.1f
+	)));
+
+	world->AddHitable(new Sphere(new SdfSphere({ -2.02f,2.2f,-1.3f }, 1.0f), new Dielectric(
+		new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.4f
+	)));
+
+	skybox = new Skybox(new Illumination(new Customize_Texture(
+		[](const float& u, const float& v, const Vector3& p)->Vector3
+		{
+			float t = 0.5f * (p[1] + 1.0f);
+			return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
+		}
+	), 0.8f));
 }
 
 void Scence::LoadIntersectionBall()
 {
+	Vector3 lookFrom(278.0f, 278.0f, -900.0f);
+	Vector3 lookAt(278.0f, 278.0f, 0.0f);
+	float dist_to_focus = 10.0f;
+	float aperture = 0.0f;
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
+
 	world = randomScence(10, 0);
 	world->AddHitable(new IntersectionHit(
 		new Sphere(new SdfSphere({ 0.0f,0.0f,0.0f }, 1.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.2f)),
@@ -36,6 +74,12 @@ void Scence::LoadIntersectionBall()
 
 void Scence::LoadRandomBall()
 {
+	Vector3 lookFrom(278.0f, 278.0f, -900.0f);
+	Vector3 lookAt(278.0f, 278.0f, 0.0f);
+	float dist_to_focus = 10.0f;
+	float aperture = 0.0f;
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
+
 	world = randomScence(500, 10);
 	world->AddHitable(new Sphere(
 		new SdfSphere(Vector3(0, 1000.5f, 1.0f), 1000.0f),
@@ -45,6 +89,12 @@ void Scence::LoadRandomBall()
 
 void Scence::LoadCheckingTexture()
 {
+	Vector3 lookFrom(278.0f, 278.0f, -900.0f);
+	Vector3 lookAt(278.0f, 278.0f, 0.0f);
+	float dist_to_focus = 10.0f;
+	float aperture = 0.0f;
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
+
 	world = randomScence(10, 0);
 	world->AddHitable(new Sphere(
 		new SdfSphere({ 0, 1000.5f, 1.0f }, 1000.0f), new Lambertian(
@@ -52,14 +102,16 @@ void Scence::LoadCheckingTexture()
 				float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
 				if (sine > 0)
 				{
-					return { 0.25f,0.65f,0.1f };
+					return { 0.25f,0.65f,0.1f }; //  DarkGreen
 				}
 				else
 				{
-					return { 0.0f,0.0f,0.0f };
+					return { 0.0f,0.0f,0.0f }; //  Black
 				}
 				})
 		)));
+
+	//world->AddHitable()
 }
 
 void Scence::LoadPerlinNoise()
@@ -74,7 +126,7 @@ void Scence::LoadCornellBox()
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
 
 	// world init
 	world = randomScence(30, 0);
@@ -101,13 +153,15 @@ void Scence::LoadCornellBox()
 
 	// skybox init
 	skybox = new Skybox(new Illumination(
-		/*new Customize_Texture(
+		new Customize_Texture(
 			[](const float& u, const float& v, const Vector3& p)->Vector3
 			{
-				float t = 0.5f * (p[1] + 1.0f);
-				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
-			})*/
-		new Image_Texture("xinminxuehui.jpg")
+				return { 0,0,0 };
+
+				/*float t = 0.5f * (p[1] + 1.0f);
+				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);*/
+
+			})
 		, 1.0f));
 }
 

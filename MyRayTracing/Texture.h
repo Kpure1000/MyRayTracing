@@ -33,6 +33,8 @@ namespace ry
 
 	};
 
+	typedef std::function<Vector3(const float&, const float&, const Vector3&)> ColorCallBack;
+
 	/*自定义纹理*/
 	class Customize_Texture : public Texture
 	{
@@ -41,8 +43,8 @@ namespace ry
 		Customize_Texture() :color(nullptr)
 		{}
 
-		Customize_Texture(std::function<Vector3(const float&, const float&, const Vector3&)>&& ColorCallBack)
-			:color(ColorCallBack)
+		Customize_Texture(ColorCallBack&& colorCallBack)
+			:color(colorCallBack)
 		{}
 
 		virtual Vector3 Value(const float& u, const float& v, const Vector3& p)const
@@ -54,7 +56,7 @@ namespace ry
 			return { 0,0,0 };
 		}
 
-		std::function<Vector3(const float&, const float&, const Vector3&)> color;
+		ColorCallBack color;
 	};
 
 	class Image_Texture : public Texture

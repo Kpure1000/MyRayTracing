@@ -17,7 +17,7 @@
 #define MULTI_THREAD 1
 
 //采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-#define REDUCE_INEGRATE
+//#define REDUCE_INEGRATE
 
 using namespace std;
 
@@ -28,16 +28,19 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 1920; //  宽
-	int ny = 1080; //  高
+	int nx = 512; //  宽
+	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 5;
+	int ns = 200; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 50;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 	HitList* world = NULL;
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
-	scence.LoadCornellBox();
+	
+	//scence.LoadCornellBox();
+	scence.LoadSomeBalls();
+
 	world = scence.GetWorld();
 	Camera* camera = scence.GetCamera();
 
@@ -364,9 +367,9 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			}
 			color.rgb /= float(ns);
 #endif // REDUCE_INEGRATE
-			color[0] = min(color[0], 1.0f);
-			color[1] = min(color[1], 1.0f);
-			color[2] = min(color[2], 1.0f);
+			//color[0] = min(color[0], 1.0f);
+			//color[1] = min(color[1], 1.0f);
+			//color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 			for (int ch = 0; ch < nChannel; ch++)
 			{
