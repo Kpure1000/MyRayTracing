@@ -28,6 +28,9 @@
     <Filter Include="头文件\thread">
       <UniqueIdentifier>{89969cbf-f749-4c6c-a032-c2b1356969ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\hit\Geometry">
+      <UniqueIdentifier>{6255426c-8923-4232-9db0-88c83cc61b33}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -68,9 +71,6 @@
     <ClInclude Include="IntersectionHit.h">
       <Filter>头文件\hit</Filter>
     </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>头文件\hit</Filter>
-    </ClInclude>
     <ClInclude Include="UnionHit.h">
       <Filter>头文件\hit</Filter>
     </ClInclude>
@@ -107,17 +107,26 @@
     <ClInclude Include="BVH.h">
       <Filter>头文件\util</Filter>
     </ClInclude>
-    <ClInclude Include="Rect.h">
-      <Filter>头文件\hit</Filter>
-    </ClInclude>
     <ClInclude Include="Scence.h">
       <Filter>头文件\render</Filter>
     </ClInclude>
-    <ClInclude Include="Skybox.h">
-      <Filter>头文件\hit</Filter>
+    <ClInclude Include="Box.h">
+      <Filter>头文件\hit\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Rect.h">
+      <Filter>头文件\hit\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件\hit\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="GeometryHit.h">
+      <Filter>头文件\hit\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="Light.h">
-      <Filter>头文件\hit</Filter>
+      <Filter>头文件\hit\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>头文件\render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

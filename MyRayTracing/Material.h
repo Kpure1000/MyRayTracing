@@ -152,13 +152,12 @@ namespace ry
 		
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
 		{
-			/*attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint) * std::max(0.0f, std::min(1.0f, intensity));*/
 			return false;
 		}
 
 		virtual Vector3 Emitted(const float& u, const float& v, const Vector3& pos)const
 		{
-			return albedo->Value(u, v, pos) * std::max(0.0f, std::min(1.0f, intensity));
+			return albedo->Value(u, v, pos) * intensity;
 
 		}
 

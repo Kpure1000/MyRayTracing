@@ -13,11 +13,16 @@
 #include<Windows.h>
 #endif // !__linux__
 
-// 开启多线程
+// release下开启多线程 与 采样优化(可选)
+#if !_DEBUG
 #define MULTI_THREAD 1
-
 //采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-//#define REDUCE_INEGRATE
+#define REDUCE_INEGRATE
+#else
+#define MULTI_THREAD 0
+#endif // _DEBUG
+
+
 
 using namespace std;
 
@@ -29,17 +34,17 @@ int run(int threadIndex, ofstream& out)
 	out << "线程指数: " << threadIndex << "\n";
 
 	int nx = 512; //  宽
-	int ny = 288; //  高
+	int ny = 512; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 200; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 50;
+	int ns = 6000; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 10;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 	HitList* world = NULL;
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
 	
-	//scence.LoadCornellBox();
-	scence.LoadSomeBalls();
+	scence.LoadCornellBox();
+	//scence.LoadSomeBalls();
 
 	world = scence.GetWorld();
 	Camera* camera = scence.GetCamera();

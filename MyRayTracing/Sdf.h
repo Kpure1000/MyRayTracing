@@ -2,6 +2,7 @@
 #define SDF_H
 #include"Ray.h"
 #include"AABB.h"
+#include"RayMath.h"
 using namespace ry;
 using std::min;
 using std::max;
@@ -124,6 +125,8 @@ namespace sdf
 			return true;
 		}
 
+		Vector3	rect[2];
+
 	protected:
 
 		virtual bool isInRange(const float&, const float&)const = 0;
@@ -180,7 +183,6 @@ namespace sdf
 			return true;
 		}
 
-		Vector3	rect[2];
 
 	protected:
 
@@ -241,8 +243,6 @@ namespace sdf
 			return true;
 		}
 
-		Vector3	rect[2];
-
 	protected:
 
 		virtual bool isInRange(const float& x, const float& z)const
@@ -302,13 +302,76 @@ namespace sdf
 			return true;
 		}
 
-		Vector3	rect[2];
-
 	protected:
 
 		virtual bool isInRange(const float& y, const float& z)const
 		{
 			return (y > rect[0][1] && y < rect[1][1] && z>rect[0][2] && z < rect[1][2]);
+		}
+
+	};
+
+	class SdfBox : public Sdf
+	{
+	public:
+
+		SdfBox(Vector3 pMin, Vector3 pMax)
+		{
+			face[0] = new SdfRect_yz(pMin[1], pMin[2], pMax[1], pMax[2], pMax[0]);
+			face[1] = new SdfRect_yz(pMin[1], pMin[2], pMax[1], pMax[2], pMin[0]);
+
+			face[2] = new SdfRect_xz(pMin[0], pMin[2], pMax[0], pMax[2], pMax[1]);
+			face[3] = new SdfRect_xz(pMin[0], pMin[2], pMax[0], pMax[2], pMin[1]);
+
+			face[4] = new SdfRect_xy(pMin[0], pMin[1], pMax[0], pMax[1], pMax[2]);
+			face[5] = new SdfRect_xy(pMin[0], pMin[1], pMax[0], pMax[1], pMin[2]);
+
+		}
+
+		~SdfBox()
+		{
+			for (size_t i = 0; i < 6; i++)
+			{
+				delete face[i];
+			}
+		}
+
+		virtual bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
+		{
+			HitRecord recTmp;
+			recTmp.mat = result.mat;
+			float closet_so_far = tMax;
+			bool isHited = false;
+			for (int i = 0; i < 6; i++)
+			{
+				if (face[i]->Hit(r, tMin, closet_so_far, recTmp, sdfRec))
+				{
+					isHited = true;
+					result = recTmp;
+					closet_so_far = result.t;
+				}
+			}
+			return isHited;
+		}
+
+		virtual bool sdf(const Vector3& p, float& sdfResult)const
+		{
+			return false;
+		}
+
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			return true;
+		}
+
+		SdfRect* face[6];
+
+	protected:
+
+		virtual bool isInRange(const float& y, const float& z)const
+		{
+			return false;
 		}
 
 	};

@@ -1,20 +1,25 @@
 #ifndef RAYTRACER_H
 #define RAYTRACER_H
 
-#include"Color.h"
-
+//hit
 #include"HitList.h"
-#include"Sphere.h"
 #include"IntersectionHit.h"
 #include"UnionHit.h"
-#include"Rect.h"
-#include"Skybox.h"
 
+//hit geometry
+#include"Sphere.h"
+#include"Rect.h"
+#include"Light.h"
+#include"Box.h"
+
+//render
+#include"Skybox.h"
 #include"Camera.h"
 #include"Material.h"
 #include"Texture.h"
-#include"Light.h"
 
+//util
+#include"Color.h"
 #include"BVH.h"
 
 class Scence;
@@ -24,7 +29,6 @@ namespace ry
 	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth);
 
 	Vector3 RayTracer(const Ray& ray, Scence* world, const int& maxDepth, int& deep);
-
 }
 
 

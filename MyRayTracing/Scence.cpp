@@ -126,30 +126,40 @@ void Scence::LoadCornellBox()
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 50, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
 
 	// world init
-	world = randomScence(30, 0);
+	world = randomScence(40, 0);
+
 	world->AddHitable(new Rect(new SdfRect_xy(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
 		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
 
 	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
 		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
+
 	world->AddHitable(new Rect(new SdfRect_xz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
 		new Lambertian(new Constant_Texture({ 0.73f,0.73f,0.73f }))));
 
 	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 555.0f),
 		new Lambertian(new Constant_Texture({ 0.12f,0.45f,0.15f }))));
+
 	world->AddHitable(new Rect(new SdfRect_yz(0.0f, 0.0f, 555.0f, 555.0f, 0.0f),
 		new Lambertian(new Constant_Texture({ 0.65f,0.05f,0.05f }))));
 
-	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 550),
-		new Illumination(new Constant_Texture({ 15.0f,15.0f,15.0f }), 1.0f)));
-	world->AddHitable(new Sphere(new SdfSphere({ 137,90,167 }, 90.0f),
+	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 554),
+		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 10.0f)));
+
+	world->AddHitable(new Box(new SdfBox({ 130,0,65 }, { 295,165,230 }),
 		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
 
-	world->AddHitable(new Sphere(new SdfSphere({ 380,120,350 }, 120.0f),
-		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));
+	world->AddHitable(new Box(new SdfBox({ 265,0,295 }, { 430,330,460 }),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+
+	/*world->AddHitable(new Sphere(new SdfSphere({ 137,180,167 }, 90.0f),
+		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
+
+	world->AddHitable(new Sphere(new SdfSphere({ 380,240,350 }, 120.0f),
+		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));*/
 
 	// skybox init
 	skybox = new Skybox(new Illumination(
