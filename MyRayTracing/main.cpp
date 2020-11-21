@@ -22,21 +22,50 @@
 #define MULTI_THREAD 0
 #endif // _DEBUG
 
-
+#include<glad/glad.h>
+#include<GLFW/glfw3.h>
 
 using namespace std;
 
-void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
-	Camera* camera, Scence* scence, int maxTraceDepth, float* endNumber);
+struct RayTraceParam
+{
+	RayTraceParam(int Start, int End, unsigned char* Data, int Nx, int Ny, int NChannel, int Ns,
+		Camera* camerA, Scence* scencE, int MaxTraceDepth, float* EndNumber)
+		: start(Start), end(End), imageData(Data), nx(Nx), ny(Ny), nChannel(NChannel), ns(Ns),
+		camera(camerA), scence(scencE),
+		maxTraceDepth(MaxTraceDepth), endNumber(EndNumber), isMainExit(nullptr)
+	{}
+	RayTraceParam(int Start, int End, unsigned char* Data, int Nx, int Ny, int NChannel, int Ns,
+		Camera* camerA, Scence* scencE, int MaxTraceDepth, float* EndNumber, bool* IsMainExit)
+		: start(Start), end(End), imageData(Data), nx(Nx), ny(Ny), nChannel(NChannel), ns(Ns),
+		camera(camerA), scence(scencE),
+		maxTraceDepth(MaxTraceDepth), endNumber(EndNumber), isMainExit(IsMainExit)
+	{}
+	int start, end;
+	unsigned char* imageData;
+	int nx, ny, nChannel, ns;
+	Camera* camera;
+	Scence* scence;
+	int maxTraceDepth;
+	float* endNumber;
+	bool* isMainExit;
+};
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void processInput(GLFWwindow* window);
+
+int DrawWindow();
+
+void RayTraceThread(RayTraceParam* param);
 
 int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 400; //  宽
-	int ny = 400; //  高
+	int nx = 512; //  宽
+	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int ns = 300; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 10;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
@@ -112,9 +141,11 @@ int run(int threadIndex, ofstream& out)
 		for (; curTask < threadNum; curTask++)
 		{
 			endFlag[curTask] = 0.0f;
-			rtThread[curTask] = new thread(RayTraceThread,
+			
+			rtThread[curTask] = new thread(RayTraceThread, new RayTraceParam(
 				(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-				nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[curTask]);
+				nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[curTask])
+			);
 		}
 
 		for (int i = 0; i < threadNum; i++)
@@ -141,9 +172,10 @@ int run(int threadIndex, ofstream& out)
 					{
 						delete rtThread[i];
 						endFlag[i] = 0.0f;
-						rtThread[i] = new thread(RayTraceThread,
+						rtThread[i] = new thread(RayTraceThread, new RayTraceParam(
 							(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-							nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[i]);
+							nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[i])
+						);
 						curTask++;
 						curEndTask++;
 						rtThread[i]->detach();
@@ -165,15 +197,15 @@ int run(int threadIndex, ofstream& out)
 			cTime = clock();
 			if (sTime >= 100)
 			{
-				system("cls");
-				printf("进度: %3.0f%%\n", (curRate + curEndTask) / (float)(taskNum) * 100);
+				//system("cls");
+				printf("\r进度: %3.0f%%          ", (curRate + curEndTask) / (float)(taskNum) * 100);
 				sTime = 0;
 			}
 
 			if (endNum == threadNum && curTask == taskNum)
 			{
-				system("cls");
-				printf("渲染完成.%3.0f%%\n\n", (curTask) / (float)(taskNum) * 100);
+				//system("cls");
+				printf("\r渲染完成.%3.0f%%    \n\n", (curTask) / (float)(taskNum) * 100);
 				out << "渲染完成.\n";
 				break;
 			}
@@ -210,7 +242,7 @@ int run(int threadIndex, ofstream& out)
 					if (sTime >= 100 && (*curRate) < 1.5f)
 					{
 						system("cls");
-						printf("进度: %3.0f%%\n", (*curRate) * 100);
+						printf("\r进度: %3.0f%%        ", (*curRate) * 100);
 						sTime = 0;
 					}
 				}
@@ -309,27 +341,79 @@ int main()
 	testOut << dt << "\n";
 
 	testOut << "渲染日志: \n\n";
+	
+	new thread(DrawWindow);
+
 	for (int i = 1; i <= 1; i++)
 	{
 		if (run(i, testOut) == 1)
 			return 1;
 	}
+
 	testOut.close();
 	system("pause");
+
+	return 0;
+
+
 }
 
-void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny, int nChannel, int ns,
-	Camera* camera, Scence* scence, int maxTraceDepth, float* endNumber)
+int DrawWindow()
+{/************************************************************************/
+	//一些重要的初始化设定
+	glfwInit(); // 初始化glfw
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); // 
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+	//创建窗口
+	GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		return -1;
+	}
+	glfwMakeContextCurrent(window);
+
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		return -1;
+	}
+
+	glViewport(0, 0, 800, 600); // 设置视口大小
+
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback); // 窗口大小调整回调
+
+	while (!glfwWindowShouldClose(window))
+	{
+		//输入
+		processInput(window);
+
+		//渲染
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
+		//事件处理，交换缓冲
+		glfwSwapBuffers(window);//双缓冲交换
+		glfwPollEvents();
+	}
+	glfwTerminate();
+}
+
+void RayTraceThread(RayTraceParam* param)
 {
 	Color color;
 	Ray r;
 	int deep = 1;
 	int intersectionTimes = 0;
-	int tryNs = min(ns, max(20, ns / 10));
+	int tryNs = min(param->ns, max(20, param->ns / 10));
 	float u, v;
-	for (int j = start; j < end; j++)
+	for (int j = param->start; j < param->end; j++)
 	{
-		for (int i = 0; i < nx; i++)
+		for (int i = 0; i < param->nx; i++)
 		{
 			color.rgb = Vector3::Zero;
 #ifdef REDUCE_INEGRATE
@@ -338,24 +422,24 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			for (int k = 0; k < tryNs; k++)
 			{
 				deep = 1;
-				u = float(i + RayMath::Drand48()) / float(nx);
-				v = float(j + RayMath::Drand48()) / float(ny);
-				r = camera->GetRay(u, v);
-				color.rgb += RayTracer(r, scence, maxTraceDepth, deep);
+				u = float(i + RayMath::Drand48()) / float(param->nx);
+				v = float(j + RayMath::Drand48()) / float(param->ny);
+				r = param->camera->GetRay(u, v);
+				color.rgb += RayTracer(r, param->scence, param->maxTraceDepth, deep);
 				if (deep > 1)intersectionTimes++;
 			}
 			//如果大概率深度大于1
 			if (intersectionTimes > tryNs * 0.8)
 			{
 				//继续采样
-				for (int k = 0; k < ns - tryNs; k++)
+				for (int k = 0; k < param->ns - tryNs; k++)
 				{
-					u = float(i + RayMath::Drand48()) / float(nx);
-					v = float(j + RayMath::Drand48()) / float(ny);
-					r = camera->GetRay(u, v);
-					color.rgb += RayTracer(r, scence, maxTraceDepth);
+					u = float(i + RayMath::Drand48()) / float(param->nx);
+					v = float(j + RayMath::Drand48()) / float(param->ny);
+					r = param->camera->GetRay(u, v);
+					color.rgb += RayTracer(r, param->scence, param->maxTraceDepth);
 				}
-				color.rgb /= float(ns);
+				color.rgb /= float(param->ns);
 			}
 			else
 			{
@@ -363,26 +447,37 @@ void RayTraceThread(int start, int end, unsigned char* imageData, int nx, int ny
 			}
 #else
 			float u, v;
-			for (int k = 0; k < ns; k++)
+			for (int k = 0; k < param->ns; k++)
 			{
-				u = float(i + RayMath::Drand48()) / float(nx);
-				v = float(j + RayMath::Drand48()) / float(ny);
+				u = float(i + RayMath::Drand48()) / float(param->nx);
+				v = float(j + RayMath::Drand48()) / float(param->ny);
 				r = camera->GetRay(u, v);
-				color.rgb += RayTracer(r, scence, maxTraceDepth);
+				color.rgb += RayTracer(r, param->scence, param->maxTraceDepth);
 			}
-			color.rgb /= float(ns);
+			color.rgb /= float(param->ns);
 #endif // REDUCE_INEGRATE
 			color[0] = min(color[0], 1.0f);
 			color[1] = min(color[1], 1.0f);
 			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
-			for (int ch = 0; ch < nChannel; ch++)
+			for (int ch = 0; ch < param->nChannel; ch++)
 			{
-				imageData[j * nx * nChannel + i * nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
+				param->imageData[j * param->nx * param->nChannel + i * param->nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
 			}
 		}
-		(*endNumber) = (float)(j - start) / (float)(end - start);
+		(*param->endNumber) = (float)(j - param->start) / (float)(param->end - param->start);
 	}
-	(*endNumber) = 1.1f;
+	(*param->endNumber) = 1.1f;
 	//printf("完成任务:%d\n", task);
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	glViewport(0, 0, width, height);
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
 }

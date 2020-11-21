@@ -155,22 +155,12 @@ void Scence::LoadCornellBox()
 	world->AddHitable(new Box(new SdfBox({ 265,0,295 }, { 430,330,460 }),
 		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
 
-	/*world->AddHitable(new Sphere(new SdfSphere({ 137,180,167 }, 90.0f),
-		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
-
-	world->AddHitable(new Sphere(new SdfSphere({ 380,240,350 }, 120.0f),
-		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.5f)));*/
-
 	// skybox init
 	skybox = new Skybox(new Illumination(
 		new Customize_Texture(
 			[](const float& u, const float& v, const Vector3& p)->Vector3
 			{
 				return { 0,0,0 };
-
-				/*float t = 0.5f * (p[1] + 1.0f);
-				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);*/
-
 			})
 		, 1.0f));
 }
