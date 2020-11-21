@@ -33,10 +33,10 @@ int run(int threadIndex, ofstream& out)
 {
 	out << "线程指数: " << threadIndex << "\n";
 
-	int nx = 512; //  宽
-	int ny = 512; //  高
+	int nx = 400; //  宽
+	int ny = 400; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 6000; //  抗锯齿(蒙特卡洛采样)
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
 	int maxTraceDepth = 10;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
