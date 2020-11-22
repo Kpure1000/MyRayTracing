@@ -11,7 +11,7 @@ namespace ry
 		
 		Box() {}
 
-		Box(SdfBox* box, Material* mat)
+		Box(Sdf* box, Material* mat)
 			:GeometryHit(box, mat)
 		{
 

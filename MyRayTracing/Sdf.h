@@ -504,6 +504,142 @@ namespace sdf
 		Sdf* sdfs[2];
 	};
 
+	class SdfTranslate : public Sdf
+	{
+	public:
+
+		SdfTranslate() :target(nullptr) {}
+
+		SdfTranslate(Sdf* Target, const Vector3& Offset)
+			:target(Target), offset(Offset) {}
+
+		virtual bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
+		{
+			Ray translateR = Ray(r.origin - offset, r.direction);
+			if (target && target->Hit(translateR, tMin, tMax, result, sdfRec))
+			{
+				result.hitPoint += offset;
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool sdf(const Vector3& p, float& sdfResult)const
+		{
+			if (target)
+				return target->sdf(p, sdfResult);
+			return false;
+		}
+
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			if (target && target->GetBBox(t0, t1, box))
+			{
+				box = AABB(box.rect[0] + offset, box.rect[1] + offset);
+				return true;
+			}
+			return false;
+		}
+
+		Sdf* target;
+
+		Vector3 offset;
+	};
+
+	class SdfRotate_Y : public Sdf
+	{
+	public:
+
+		SdfRotate_Y() :target(nullptr) {}
+
+		SdfRotate_Y(Sdf* Target, const float& Angle)
+			:target(Target)
+		{
+			float radians = (Pi / 180.0f) * Angle;
+			sinTheta = sin(radians);
+			cosTheta = cos(radians);
+			if (target)
+			{
+				hasBox = target->GetBBox(0, 1, bBox);
+				Vector3 vMin(MAX_FLOAT, MAX_FLOAT, MAX_FLOAT);
+				Vector3 vMax(-MAX_FLOAT, -MAX_FLOAT, -MAX_FLOAT);
+				for (int i = 0; i < 2; i++)
+				{
+					for (int j = 0; j < 2; j++)
+					{
+						for (int k = 0; k < 2; k++)
+						{
+							float x = i * bBox.rect[1][0] + (1 - i) * bBox.rect[0][0];
+							float y = j * bBox.rect[1][1] + (1 - j) * bBox.rect[0][1];
+							float z = k * bBox.rect[1][2] + (1 - k) * bBox.rect[0][2];
+							float newX = cosTheta * x + sinTheta * z;
+							float newZ = -sinTheta * x + cosTheta * z;
+							Vector3 tester(newX, y, newZ);
+							for (int c = 0; c < 3; c++)
+							{
+								if (tester[c] > vMax[c])
+									vMax[c] = tester[c];
+								if (tester[c] < vMin[c])
+									vMin[c] = tester[c];
+							}
+						}
+					}
+				}
+				bBox = AABB(vMin, vMax);
+			}
+			else
+			{
+				hasBox = false;
+			}
+		}
+
+		virtual bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
+		{
+			Vector3 origin = r.origin;
+			Vector3 direction = r.direction;
+			origin[0] = cosTheta * r.origin[0] - sinTheta * r.origin[2];
+			origin[2] = sinTheta * r.origin[0] + cosTheta * r.origin[2];
+			direction[0] = cosTheta * r.direction[0] - sinTheta * r.direction[2];
+			direction[2] = sinTheta * r.direction[0] + cosTheta * r.direction[2];
+			Ray rotateR(origin, direction);
+			if (target && target->Hit(rotateR, tMin, tMax, result, sdfRec))
+			{
+				Vector3 hitP = result.hitPoint;
+				Vector3 nor = result.normal;
+				hitP[0] = cosTheta * result.hitPoint[0] + sinTheta * result.hitPoint[2];
+				hitP[2] = -sinTheta * result.hitPoint[0] + cosTheta * result.hitPoint[2];
+				nor[0] = cosTheta * result.normal[0] + sinTheta * result.normal[2];
+				nor[2] = -sinTheta * result.normal[0] + cosTheta * result.normal[2];
+				result.hitPoint = hitP;
+				result.normal = nor;
+				return true;
+			}
+			return false;
+		}
+
+		virtual bool sdf(const Vector3& p, float& sdfResult)const
+		{
+			if (target)
+				return target->sdf(p, sdfResult);
+			return false;
+		}
+
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			if (target)
+				box = bBox;
+			return hasBox;
+		}
+
+		Sdf* target;
+
+		float sinTheta, cosTheta;
+		bool hasBox;
+		AABB bBox;
+	};
+
 }
 
 #endif // !SDF_H

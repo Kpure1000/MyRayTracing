@@ -51,6 +51,11 @@ namespace ry
 			return true;
 		}
 
+		/*virtual Vector3 Emitted(const float& u, const float& v, const Vector3& pos)const
+		{
+			return 0.01f * albedo->Value(u, v, pos);
+		}*/
+
 		//纹理
 		Texture* albedo;
 
@@ -85,6 +90,55 @@ namespace ry
 
 		//粗糙率
 		float fuzz;
+	};
+
+	class Phong : public Material
+	{
+	public:
+
+		Phong(Texture* t)
+			:albedo(t) {}
+
+		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
+		{
+			float dot;
+			if (Vector3::Dot(rayIn.Direction(), rec.normal) > 0)
+			{
+				dot = Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
+			}
+			else
+			{
+				dot = -Vector3::Dot(Vector3::Normalize(rayIn.Direction()), rec.normal);
+			}
+
+
+			attenuation = albedo->Value(rec.u, rec.v, rec.hitPoint);
+
+			Vector3 reflected;
+			
+			bool isReflect = (dot * RayMath::Drand48() < 0.1f);
+			if (isReflect)
+			{
+				reflected = RayMath::Reflect(rayIn.Direction(), rec.normal);
+			}
+
+			Vector3 lambertian = rec.hitPoint + rec.normal + RayMath::random_in_unit_ball();
+			if (Vector3::Dot(scattered.Direction(), rec.normal) > 0 && isReflect)
+			{
+				scattered = Ray(rec.hitPoint, lambertian - rec.hitPoint 
+					+ (1 - dot) * (reflected + dot * RayMath::randomUnitVector()));
+			}
+			else
+			{
+				scattered = Ray(rec.hitPoint, lambertian - rec.hitPoint);
+			}
+			return true;
+
+		}
+
+		//纹理
+		Texture* albedo;
+
 	};
 
 	/*透光材质*/

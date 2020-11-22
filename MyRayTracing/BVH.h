@@ -6,8 +6,13 @@
 namespace ry
 {
 
-	struct BNode : public Hitable
+	class BNode : public Hitable
 	{
+	public:
+		BNode() 
+		{
+			sub[0] = sub[1] = nullptr;
+		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
@@ -48,7 +53,8 @@ namespace ry
 		}
 
 		AABB box;
-		BNode* sub[2] = { nullptr,nullptr };
+
+		Hitable* sub[2];
 	};
 
 	class BVH : public Hitable
@@ -59,8 +65,22 @@ namespace ry
 
 		BVH(Hitable** list, int n, float t0, float t1) :root(nullptr)
 		{
-			root = new BNode();
-			BuildBVH(list, n, t0, t1, root);
+			root = BuildBVH(list, n, t0, t1);
+
+			//测试树:
+			/*int count = 0;
+			VisitBVHTree(root, count);
+			printf("BVH有节点: %d个\n", count);*/
+		}
+
+		void VisitBVHTree(BNode* root,int& count)
+		{
+			if (root != nullptr)
+			{
+				count++;
+					VisitBVHTree((BNode*)root->sub[0], count);
+					VisitBVHTree((BNode*)root->sub[1], count);
+			}
 		}
 
 		/*~BVH()
@@ -85,7 +105,7 @@ namespace ry
 
 	private:
 
-		void BuildBVH(Hitable** list, int n, float t0, float t1, BNode* broot)
+		BNode* BuildBVH(Hitable** list, int n, float t0, float t1)
 		{
 			int axis = int(3 * RayMath::Drand48());
 			if (axis == 0)
@@ -133,28 +153,31 @@ namespace ry
 						else
 							return 1;
 					});
-			broot->sub[0] = new BNode();
-			broot->sub[1] = new BNode();
+			BNode* broot = new BNode();
+
 			if (n == 1)
 			{
 				broot->sub[0] = broot->sub[1] = (BNode*)list[0];
 			}
 			else if (n == 2)
 			{
-				broot->sub[0] = (BNode*)list[0];
-				broot->sub[1] = (BNode*)list[1];
+				broot->sub[0] = list[0];
+				broot->sub[1] = list[1];
 			}
 			else
 			{
-				BuildBVH(list, n / 2, t0, t1, broot->sub[0]);
-				BuildBVH(list, n / 2, t0, t1, broot->sub[1]);
+				broot->sub[0] = BuildBVH(list, n / 2, t0, t1);
+				broot->sub[1] = BuildBVH(list + n / 2, n - n / 2, t0, t1);
 			}
 			AABB boxL, boxR;
 			if (!broot->sub[0]->GetBBox(0, 0, boxL) || !broot->sub[0]->GetBBox(0, 0, boxR))
 			{
 				std::cerr << "No bounding box in BNode constructor.!\n";
 			}
+
 			broot->box = AABB::Surrounding(boxL, boxR);
+
+			return broot;
 		}
 
 		BNode* root;

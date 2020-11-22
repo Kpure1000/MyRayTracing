@@ -20,6 +20,11 @@ public:
 		return world;
 	}
 
+	BVH* GetBVH()
+	{
+		return bvh;
+	}
+
 	Camera* GetCamera()
 	{
 		return camera;
@@ -53,6 +58,8 @@ private:
 	int maxTraceDepth;
 
 	HitList* world;
+
+	BVH* bvh;
 
 	Camera* camera;
 

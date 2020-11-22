@@ -17,7 +17,7 @@
 #if !_DEBUG
 #define MULTI_THREAD 1
 //采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-#define REDUCE_INEGRATE
+//#define REDUCE_INEGRATE
 #else
 #define MULTI_THREAD 0
 #endif // _DEBUG
@@ -65,15 +65,17 @@ int run(int threadIndex, ofstream& out)
 	int nx = 512; //  宽
 	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 300; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 10;
+	int ns = 100; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 6;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 	HitList* world = NULL;
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
 	
-	scence.LoadCornellBox();
 	//scence.LoadSomeBalls();
+	scence.LoadIntersectionBall();
+	//scence.LoadRandomBall();
+	//scence.LoadCornellBox();
 
 	world = scence.GetWorld();
 	Camera* camera = scence.GetCamera();
@@ -342,7 +344,7 @@ int main()
 
 	testOut << "渲染日志: \n\n";
 	
-	new thread(DrawWindow);
+	//new thread(DrawWindow);
 
 	for (int i = 1; i <= 1; i++)
 	{
@@ -451,15 +453,17 @@ void RayTraceThread(RayTraceParam* param)
 			{
 				u = float(i + RayMath::Drand48()) / float(param->nx);
 				v = float(j + RayMath::Drand48()) / float(param->ny);
-				r = camera->GetRay(u, v);
+				r = param->camera->GetRay(u, v);
 				color.rgb += RayTracer(r, param->scence, param->maxTraceDepth);
 			}
 			color.rgb /= float(param->ns);
 #endif // REDUCE_INEGRATE
+			
 			color[0] = min(color[0], 1.0f);
 			color[1] = min(color[1], 1.0f);
 			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
+			
 			for (int ch = 0; ch < param->nChannel; ch++)
 			{
 				param->imageData[j * param->nx * param->nChannel + i * param->nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
