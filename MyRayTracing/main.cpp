@@ -65,17 +65,17 @@ int run(int threadIndex, ofstream& out)
 	int nx = 512; //  宽
 	int ny = 288; //  高
 	int nChannel = 3; //  颜色通道数量
-	int ns = 100; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 6;
+	int ns = 150; //  抗锯齿(蒙特卡洛采样)
+	int maxTraceDepth = 10;
 	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
 
 	HitList* world = NULL;
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
 	
 	//scence.LoadSomeBalls();
-	//scence.LoadIntersectionBall();
+	scence.LoadIntersectionBall();
 	//scence.LoadUnionBall();
-	scence.LoadDifferenceBall();
+	//scence.LoadDifferenceBall();
 	//scence.LoadRandomBall();
 	//scence.LoadCornellBox();
 

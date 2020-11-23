@@ -55,40 +55,43 @@ void Scence::LoadSomeBalls()
 
 void Scence::LoadIntersectionBall()
 {
-	Vector3 lookFrom(14.0f, -0.5f, -8.0f);
-	Vector3 lookAt(0.0f, 0.5f, -8.0f);
+	Vector3 lookFrom(20.0f, 1.5f, -20.0f);
+	Vector3 lookAt(0.0f, 1.5f, -13.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 45, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(nx) / float(ny), aperture, dist_to_focus);
 
 	world = randomScence(20, 0);
 
-	world->AddHitable(new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,1.5f,-2.0f }, 3.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)),
-		new Sphere(new SdfSphere({ 0.0f, 1.5f, -7.0f }, 3.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
-	));
+	// Í¸¾µ: 
 	float offset = 4.0f;
 	world->AddHitable(new IntersectionHit(
-		new Sphere(new SdfSphere({ 0.0f,1.5f,-6.0f + offset },10.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.7f)),
-		new Sphere(new SdfSphere({ 0.0f, 1.5f, -25.0f + offset }, 10.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.7f)),
+		new Sphere(new SdfSphere({ 0.0f, 1.5f,-2.0f + offset },15.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.617f)),
+		new Sphere(new SdfSphere({ 0.0f, 1.5f, -30.0f + offset }, 15.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.617f)),
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
 	));
 
-	/*world->AddHitable(new Sphere(new SdfSphere({ -3.0f,8.5f,-5.0f }, 3.0f),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)));
-	world->AddHitable(new Sphere(new SdfSphere({ -3.0f, 8.5f, -10.0f }, 3.0f),
-		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)));*/
+	world->AddHitable(new Sphere(new SdfSphere({ 2.4f,-4.9f,-33.5 }, 2.1f), new Lambertian(new Constant_Texture({ 1.0,1.0,1.0 }))));
+	world->AddHitable(new Sphere(new SdfSphere({ -2.4f,-4.4f,-35.0 }, 2.6f), new Metal(new Constant_Texture({ 0.4,0.4,0.4 }), 0.0f)));
+
+	world->AddHitable(new Rect(new SdfRect_xy(-6, -7, 6, 8.5, -37), new Illumination(new Constant_Texture({ 1,1,1 }),33.0)));
+	world->AddHitable(new Rect(new SdfRect_xz(-6, -37, 6, -29, 8.5), new Illumination(new Constant_Texture({ 0.05,0.8,1.0 }),5.0f)));
+	world->AddHitable(new Rect(new SdfRect_xz(-6, -37, 6, -29, -7), new Lambertian(new Constant_Texture({ 0.4,0.4,0.1 }))));
+	world->AddHitable(new Rect(new SdfRect_yz(-7, -37, 8.5, -29, 6), new Lambertian(new Constant_Texture({ 0,0.6,0 }))));
+	world->AddHitable(new Rect(new SdfRect_yz(-7, -37, 8.5, -29, -6), new Lambertian(new Constant_Texture({ 0.6,0,0 }))));
+
+	world->AddHitable(new Rect(new SdfRect_xy(-37, -35.5f, 37, 38.5f, 5.1f), new Lambertian(new Constant_Texture({ 0.1,0.1,0.1 }))));
 
 	skybox = new Skybox(new Illumination(
-		/*new Customize_Texture(
+		new Customize_Texture(
 		[](const float& u, const float& v, const Vector3& p)->Vector3
 		{
+			return { 0,0,0 };
 			float t = 0.5f * (p[1] + 1.0f);
 			return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
 		}
-	)*/
-		new Image_Texture("skybox.jpg")
+	)
+		//new Image_Texture("red_hill_curve.jpg")
 		, 0.8f));
 }
 
@@ -152,7 +155,7 @@ void Scence::LoadDifferenceBall()
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));*/
 
 	skybox = new Skybox(new Illumination(
-		new Image_Texture("sky.jpg")
+		new Image_Texture("red_hill_curve.jpg")
 		, 1.0f));
 }
 
