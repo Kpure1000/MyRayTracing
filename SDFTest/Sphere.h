@@ -24,12 +24,13 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)
 		{
+			HitRecord far;
 			if (material != nullptr)
 			{
 				rec.mat = material;
 			}
 			SdfRecord sdfR;
-			return sdf->Hit(r, tMin, tMax, rec, sdfR);
+			return sdf->Hit(r, tMin, tMax, rec,far, sdfR);
 		}
 
 		virtual void SetMaterial(Material* mat)

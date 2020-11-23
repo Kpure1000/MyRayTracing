@@ -13,10 +13,11 @@ namespace ry
 	struct HitRecord
 	{
 	public:
-		float t;
+		float t = 0.0f;
 		Vector2f hitPoint;
 		Vector2f normal;
-		Material* mat;
+		Material* mat = nullptr;
+		bool isInRange = false;
 	};
 
 	class Hitable : public Drawable
