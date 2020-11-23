@@ -73,7 +73,8 @@ int run(int threadIndex, ofstream& out)
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
 	
 	//scence.LoadSomeBalls();
-	scence.LoadIntersectionBall();
+	//scence.LoadIntersectionBall();
+	scence.LoadUnionBall();
 	//scence.LoadRandomBall();
 	//scence.LoadCornellBox();
 

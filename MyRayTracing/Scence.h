@@ -39,6 +39,8 @@ public:
 
 	void LoadIntersectionBall();
 
+	void LoadUnionBall();
+
 	void LoadRandomBall();
 
 	void LoadCheckingTexture();

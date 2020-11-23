@@ -42,6 +42,11 @@ namespace ry
 			material = mat;
 		}
 
+		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		{
+			return true;
+		}
+
 		Hitable* hits[2];
 	};
 }

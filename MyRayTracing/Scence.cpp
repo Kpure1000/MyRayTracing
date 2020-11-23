@@ -75,22 +75,6 @@ void Scence::LoadIntersectionBall()
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
 	));
 
-	//auto interA = new IntersectionHit(
-	//	new Sphere(new SdfSphere({ 2.0f,0.7f,-6.0f }, 5.0f), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//	//new Box(new SdfBox({ 2.0f,1.5f,-8.0f }, { 5.0f,2.0f,-12.0f }), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//	new Sphere(new SdfSphere({ 2.2f,0.35f,-6.1f }, 5.0f), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//	new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))
-	//);
-
-	//world->AddHitable(new IntersectionHit(interA,
-	//	new IntersectionHit(
-	//		new Sphere(new SdfSphere({ 4.0f,3.5f,-3.0f }, 5.0f), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//		//new Box(new SdfBox({ 2.0f,1.5f,-8.0f }, { 5.0f,2.0f,-12.0f }), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//		new Sphere(new SdfSphere({ 6.3f,5.4f,-1.3f }, 5.0f), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))),
-	//		new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))
-	//	), new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))
-	//	));
-
 	/*world->AddHitable(new Sphere(new SdfSphere({ -3.0f,8.5f,-5.0f }, 3.0f),
 		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)));
 	world->AddHitable(new Sphere(new SdfSphere({ -3.0f, 8.5f, -10.0f }, 3.0f),
@@ -104,6 +88,38 @@ void Scence::LoadIntersectionBall()
 			return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
 		}
 	)*/
+		new Image_Texture("skybox2.jpg")
+		, 0.8f));
+}
+
+void Scence::LoadUnionBall()
+{
+	Vector3 lookFrom(10.0f, -0.5f, -8.0f);
+	Vector3 lookAt(0.0f, 0.5f, -8.0f);
+	float dist_to_focus = (lookAt - lookFrom).Magnitude();
+	float aperture = 0.0f;
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(nx) / float(ny), aperture, dist_to_focus);
+
+	world = randomScence(20, 0);
+
+	/*world->AddHitable(new UnionHit(
+		new Sphere(new SdfSphere({ 0.0f,2.5f,-2.0f }, 3.0f), new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.1f)),
+		new Sphere(new SdfSphere({ 0.0f, 2.5f, -7.0f }, 3.0f), new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
+	));*/
+
+	world->AddHitable(new UnionHit(
+		new Sphere(new SdfSphere({ 0.0f,2.5f,-2.0f }, 3.0f), new Transparent()),
+		new Sphere(new SdfSphere({ 0.0f, 2.5f, -7.0f }, 3.0f), new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)),
+		new Dielectric(new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.5f)
+	));
+
+	world->AddHitable(new Sphere(new SdfSphere({ -0.0f,-2.5f,-2.0f }, 3.0f),
+		new Transparent()));
+	world->AddHitable(new Sphere(new SdfSphere({ -0.0f, -2.5f, -7.0f }, 3.0f),
+		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));
+
+	skybox = new Skybox(new Illumination(
 		new Image_Texture("skybox2.jpg")
 		, 0.8f));
 }

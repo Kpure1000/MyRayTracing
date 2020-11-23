@@ -92,6 +92,24 @@ namespace ry
 		float fuzz;
 	};
 
+	class Transparent : public Material
+	{
+	public:
+
+		Transparent() {
+			
+		}
+		
+		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Vector3& attenuation, Ray& scattered)const
+		{
+			Vector3 reflected = RayMath::Reflect(rayIn.Direction(), rec.normal);
+			scattered = Ray(rec.hitPoint, rayIn.direction);
+			attenuation = { 1,1,1 };
+			return true;
+		}
+
+	};
+
 	class Phong : public Material
 	{
 	public:
