@@ -159,6 +159,7 @@
     <ClInclude Include="BVH.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="DifferenceHit.h" />
     <ClInclude Include="GeometryHit.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />

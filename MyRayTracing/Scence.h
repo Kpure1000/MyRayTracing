@@ -41,6 +41,8 @@ public:
 
 	void LoadUnionBall();
 
+	void LoadDifferenceBall();
+
 	void LoadRandomBall();
 
 	void LoadCheckingTexture();

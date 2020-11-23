@@ -74,7 +74,8 @@ int run(int threadIndex, ofstream& out)
 	
 	//scence.LoadSomeBalls();
 	//scence.LoadIntersectionBall();
-	scence.LoadUnionBall();
+	//scence.LoadUnionBall();
+	scence.LoadDifferenceBall();
 	//scence.LoadRandomBall();
 	//scence.LoadCornellBox();
 

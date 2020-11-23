@@ -5,6 +5,7 @@
 #include"HitList.h"
 #include"IntersectionHit.h"
 #include"UnionHit.h"
+#include"DifferenceHit.h"
 
 //hit geometry
 #include"Sphere.h"

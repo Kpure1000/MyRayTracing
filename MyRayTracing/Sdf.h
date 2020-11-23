@@ -24,9 +24,17 @@ namespace sdf
 			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const = 0;
 
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax,
-			HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const = 0;
+			HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
+		{
+			return false;
+		}
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const = 0;
+
+		virtual bool sdf(const Vector3& p, float& sdfResult, const float&offset)const
+		{
+			return false;
+		}
 
 		virtual bool GetBBox(float t0, float t1, AABB& box)const
 		{
@@ -116,6 +124,16 @@ namespace sdf
 			return false;
 		}
 
+		virtual bool sdf(const Vector3& p, float& sdfResult, const float& offset)const
+		{
+			sdfResult = Vector3::Distance(p, center);
+			if (sdfResult <= radius + offset)
+			{
+				return true;
+			}
+			return false;
+		}
+
 		virtual bool GetBBox(float t0, float t1, AABB& box)const
 		{
 			box.rect[0][0] = center[0] - radius;
@@ -163,14 +181,6 @@ namespace sdf
 	protected:
 
 		virtual bool isInRange(const float&, const float&)const = 0;
-
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 
 	};
 
@@ -232,13 +242,6 @@ namespace sdf
 			return (x > rect[0][0] && x < rect[1][0] && y>rect[0][1] && y < rect[1][1]);
 		}
 
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 
 	};
 
@@ -297,14 +300,6 @@ namespace sdf
 		virtual bool isInRange(const float& x, const float& z)const
 		{
 			return (x > rect[0][0] && x < rect[1][0] && z>rect[0][2] && z < rect[1][2]);
-		}
-
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
 		}
 
 	};
@@ -366,13 +361,6 @@ namespace sdf
 			return (y > rect[0][1] && y < rect[1][1] && z>rect[0][2] && z < rect[1][2]);
 		}
 
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 	};
 
 	class SdfBox : public Sdf
@@ -546,14 +534,6 @@ namespace sdf
 
 		Sdf* sdfs[2];
 
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
-
 	};
 
 	class SdfUnion : public Sdf
@@ -613,7 +593,7 @@ namespace sdf
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
-			return true;
+			return !(sdfs[0]->sdf(p, sdfResult) && sdfs[1]->sdf(p, sdfResult));
 		}
 
 		virtual bool GetBBox(float t0, float t1, AABB& box)const
@@ -634,14 +614,6 @@ namespace sdf
 		}
 
 		Sdf* sdfs[2];
-
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 
 	};
 
@@ -655,14 +627,53 @@ namespace sdf
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& result, SdfRecord& sdfRec)const
+			const float& tMax, HitRecord& near, SdfRecord& sdfRec)const
 		{
-			return true;
+			//float disA, disB; //  ¾àÀë
+			HitRecord nearA = near, nearB = near; //  Åö×²½á¹û
+			HitRecord farA, farB; //  Åö×²½á¹û
+			SdfRecord sdfRA, sdfRB;
+			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
+			float discriminant;
+			isHitA = sdfs[0]->Hit(r, tMin, tMax, nearA, farA, sdfRA);
+			isHitB = sdfs[1]->Hit(r, tMin, tMax, nearB, farB, sdfRB);
+			float sdfResult;
+			if (isHitA || isHitB)
+			{
+				if (nearA.isInRange && this->sdf(r.PointTo(nearA.t), sdfResult))//HitA in
+				{
+					near = nearA;
+					sdfRec = SdfRecord::A;
+					return isHitA;
+				}
+				if (nearB.isInRange && this->sdf(r.PointTo(nearB.t), sdfResult))//HitB in
+				{
+					near = nearB;
+					sdfRec = SdfRecord::B;
+					return isHitB;
+				}
+				if (farB.isInRange && this->sdf(r.PointTo(farB.t), sdfResult))
+				{
+					near = farB;
+					sdfRec = SdfRecord::B;
+					return isHitB;
+				}
+				if (farA.isInRange && this->sdf(r.PointTo(farA.t), sdfResult))
+				{
+					near = farA;
+					sdfRec = SdfRecord::A;
+					return isHitA;
+				}
+				sdfRec = SdfRecord::FLASE;
+				return false; //  none in
+			}
+			sdfRec = SdfRecord::FLASE;
+			return false;
 		}
 
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
-			return true;
+			return (sdfs[0]->sdf(p, sdfResult) && !sdfs[1]->sdf(p, sdfResult, -1e-2f));
 		}
 
 		virtual bool GetBBox(float t0, float t1, AABB& box)const
@@ -683,14 +694,6 @@ namespace sdf
 		}
 
 		Sdf* sdfs[2];
-
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 
 	};
 
