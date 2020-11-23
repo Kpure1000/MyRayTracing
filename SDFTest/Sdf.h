@@ -22,8 +22,16 @@ namespace sdf
 
 		virtual bool sdf(const Vector2f& p, float& sdfResult)const = 0;
 
+		virtual bool sdf(const Vector2f& p, float& sdfResult, const float& offset)const
+		{
+			return false;
+		}
+
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const = 0;
+			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
+		{
+			return false;
+		}
 
 	};
 
@@ -104,12 +112,23 @@ namespace sdf
 			return false;
 		}
 
+		virtual bool sdf(const Vector2f& p, float& sdfResult, const float& offset)const
+		{
+			sdfResult = Distance(p, center);
+			if (sdfResult <= radius + offset)
+			{
+				return true;
+			}
+			return false;
+		}
+
 		Vector2f center;
 
 		float radius;
 		
 	};
 
+	/*AinterB*/
 	class SdfIntersection : public Sdf
 	{
 	public:
@@ -159,16 +178,9 @@ namespace sdf
 		Sdf* sdfA;
 		Sdf* sdfB;
 
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
-
 	};
 
+	/*AunionB*/
 	class SdfUnion : public Sdf
 	{
 	public:
@@ -232,13 +244,72 @@ namespace sdf
 		Sdf* sdfA;
 		Sdf* sdfB;
 
-	private:
+	};
+
+
+	/*A-B*/
+	class SdfDifference : public Sdf
+	{
+	public:
+
+		SdfDifference() {}
+
+		SdfDifference(Sdf* A, Sdf* B)
+			:sdfA(A), sdfB(B)
+		{}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
+			const float& tMax, HitRecord& near, SdfRecord& sdfRec)const
 		{
+			//float disA, disB; //  ¾àÀë
+			HitRecord nearA = near, nearB = near; //  Åö×²½á¹û
+			HitRecord farA, farB; //  Åö×²½á¹û
+			SdfRecord sdfRA, sdfRB;
+			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
+			float discriminant;
+			isHitA = sdfA->Hit(r, tMin, tMax, nearA, farA, sdfRA);
+			isHitB = sdfB->Hit(r, tMin, tMax, nearB, farB, sdfRB);
+			float sdfResult;
+			if (isHitA || isHitB)
+			{
+				if (nearA.isInRange && this->sdf(r.PointTo(nearA.t), sdfResult))//HitA in
+				{
+					near = nearA;
+					sdfRec = SdfRecord::A;
+					return isHitA;
+				}
+				if (nearB.isInRange && this->sdf(r.PointTo(nearB.t), sdfResult))//HitB in
+				{
+					near = nearB;
+					sdfRec = SdfRecord::B;
+					return isHitB;
+				}
+				if (farB.isInRange && this->sdf(r.PointTo(farB.t), sdfResult))
+				{
+					near = farB;
+					sdfRec = SdfRecord::B;
+					return isHitB;
+				}
+				if (farA.isInRange && this->sdf(r.PointTo(farA.t), sdfResult))
+				{
+					near = farA;
+					sdfRec = SdfRecord::A;
+					return isHitA;
+				}
+				sdfRec = SdfRecord::FLASE;
+				return false; //  none in
+			}
+			sdfRec = SdfRecord::FLASE;
 			return false;
 		}
+
+		virtual bool sdf(const Vector2f& p, float& sdfResult)const
+		{
+			return (sdfA->sdf(p, sdfResult) && !sdfB->sdf(p, sdfResult, -1e-2f));
+		}
+
+		Sdf* sdfA;
+		Sdf* sdfB;
 
 	};
 

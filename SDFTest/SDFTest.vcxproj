@@ -149,6 +149,7 @@
     <ClCompile Include="test_main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DifferenceHit.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />
     <ClInclude Include="InterHit.h" />

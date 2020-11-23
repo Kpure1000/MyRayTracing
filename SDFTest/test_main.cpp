@@ -6,6 +6,7 @@
 #include"Sphere.h"
 #include"InterHit.h"
 #include"UnionHit.h"
+#include"DifferenceHit.h"
 using namespace ry;
 using namespace sdf;
 using namespace std;
@@ -37,11 +38,11 @@ int main()
 	world->list[3] = new Sphere(new SdfSphere({ 430,420 }, 40), new Dielectric(1.3f));
 	world->list[4] = new Sphere(new SdfSphere({ 730,620 }, 70), new Metal());*/
 	
-	/*world->list[0] = new InterHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
-		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));*/
-
-	world->list[0] = new UnionHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
+	world->list[0] = new DifferenceHit (new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
 		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));
+
+	/*world->list[0] = new UnionHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Metal()),
+		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));*/
 
 
 	//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
