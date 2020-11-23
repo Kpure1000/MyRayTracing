@@ -655,12 +655,14 @@ namespace sdf
 				if (farB.isInRange && this->sdf(r.PointTo(farB.t), sdfResult))
 				{
 					near = farB;
+					near.normal = -near.normal;
 					sdfRec = SdfRecord::B;
 					return isHitB;
 				}
 				if (farA.isInRange && this->sdf(r.PointTo(farA.t), sdfResult))
 				{
 					near = farA;
+					near.normal = -near.normal;
 					sdfRec = SdfRecord::A;
 					return isHitA;
 				}
