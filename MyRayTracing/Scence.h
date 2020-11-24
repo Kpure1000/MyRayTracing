@@ -15,6 +15,11 @@ public:
 
 	~Scence();
 
+	unsigned char* GetImageBuffer()
+	{
+		return imageBuffer;
+	}
+
 	HitList* GetWorld()
 	{
 		return world;
@@ -55,18 +60,25 @@ private:
 
 	HitList* randomScence(int maxSize, int randomIndex);
 
-	int nx;
-	int ny;
-	int nChannel;
-	int ns;
+public:
+
+	int width;
+	int height;
+	int channel;
+	int sample;
 	int maxTraceDepth;
+
+private:
+
+	//  buffer of image
+	unsigned char* imageBuffer;
 
 	HitList* world;
 
 	BVH* bvh;
 
 	Camera* camera;
-
+	
 	Skybox* skybox;
 
 };

@@ -6,9 +6,17 @@ Scence::Scence()
 }
 
 Scence::Scence(int Width, int Height, int nChannel, int SampleIndex, int MaxTracingDepth)
-	: nx(Width), ny(Height), nChannel(nChannel), ns(SampleIndex), maxTraceDepth(MaxTracingDepth),
+	: width(Width), height(Height), channel(nChannel), sample(SampleIndex), maxTraceDepth(MaxTracingDepth),
 	world(nullptr), camera(nullptr), skybox(nullptr)
 {
+	imageBuffer = (unsigned char*)malloc(sizeof(unsigned char) * width * height * nChannel);
+	if (imageBuffer != NULL)
+	{
+		for (int i = 0; i < width * height * nChannel; i++)
+		{
+			imageBuffer[i] = (unsigned char)(0);
+		}
+	}
 }
 
 Scence::~Scence()
@@ -16,6 +24,7 @@ Scence::~Scence()
 	if (world)delete world;
 	if (camera)delete camera;
 	if (skybox)delete skybox;
+	if (imageBuffer)free(imageBuffer);
 }
 
 void Scence::LoadSomeBalls()
@@ -24,7 +33,7 @@ void Scence::LoadSomeBalls()
 	Vector3 lookAt(0.0f, 1.5f, 0.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 60, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 60, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(10, 0);
 	world->AddHitable(new Sphere(new SdfSphere({ 0,-1000.5f,0.0f }, 1000.8f), new Metal(
@@ -59,7 +68,7 @@ void Scence::LoadIntersectionBall()
 	Vector3 lookAt(0.0f, 1.5f, -13.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(20, 0);
 
@@ -101,7 +110,7 @@ void Scence::LoadUnionBall()
 	Vector3 lookAt(0.0f, 0.5f, -8.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 80, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(20, 0);
 
@@ -133,7 +142,7 @@ void Scence::LoadDifferenceBall()
 	Vector3 lookAt(0.0f, 2.5f, -8.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 45, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 45, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(20, 0);
 
@@ -165,7 +174,7 @@ void Scence::LoadRandomBall()
 	Vector3 lookAt(-0.5f, 0.7f, -1.0f);
 	float dist_to_focus = (lookAt - lookFrom).Magnitude();
 	float aperture = 0.01f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 70, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 70, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(500, 10);
 
@@ -210,7 +219,7 @@ void Scence::LoadCheckingTexture()
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 78, float(width) / float(height), aperture, dist_to_focus);
 
 	world = randomScence(10, 0);
 	world->AddHitable(new Sphere(
@@ -243,7 +252,7 @@ void Scence::LoadCornellBox()
 	Vector3 lookAt(278.0f, 278.0f, 0.0f);
 	float dist_to_focus = 10.0f;
 	float aperture = 0.0f;
-	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 38, float(nx) / float(ny), aperture, dist_to_focus);
+	camera = new Camera(lookFrom, lookAt, { 0,1,0 }, 38, float(width) / float(height), aperture, dist_to_focus);
 
 	// world init
 	world = randomScence(40, 0);

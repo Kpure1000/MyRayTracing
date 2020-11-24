@@ -1,126 +1,90 @@
+#include "RayTracer.h"
+#include "Scence.h"
+#include"rtx/render/RenderWindow.h"
+
 #include<iostream>
 #include<fstream>
 #include<ctime>
 #include<random>
 #include<thread>
-#include<stb/stb_image_write.h>
 #include<algorithm>
-
-#include "RayTracer.h"
-#include "Scence.h"
-
-#ifndef __linux__
 #include<Windows.h>
-#endif // !__linux__
+#include<stb/stb_image_write.h>
 
-// release下开启多线程 与 采样优化(可选)
+using namespace std;
+using namespace rtx;
+
+/*--------------------------------------------*/
+
+// multi-thread on under release
 #if !_DEBUG
 #define MULTI_THREAD 1
-//采样优化，当追踪深度为1时，不进行蒙特卡洛积分采样
-//#define REDUCE_INEGRATE
+//Sample Optimization (When tracing depth = 1, do NOT sample
+#define SAMPLE_OPTIMIZATION
 #else
 #define MULTI_THREAD 0
 #endif // _DEBUG
 
-
+#ifndef CannotResize
 #define CannotResize  (sf::Style::Titlebar |  sf::Style::Close)
+#endif // !CannotResize
+#ifndef KeyPressing
 #define KeyPressing sf::Event::KeyPressed
+#endif // !KeyPressing
+#ifndef KeyReleasing
 #define KeyReleasing sf::Event::KeyReleased
+#endif // !KeyReleasing
+#ifndef KeyEvent
 #define KeyEvent(EV) (sf::Keyboard::isKeyPressed(EV))
+#endif // !KeyEvent
 
-
-#include<glad/glad.h>
-#include<GLFW/glfw3.h>
-
-#include<SFML/Graphics.hpp>
-
-using namespace std;
-
+//  the param of ray tracing thread call back
 struct RayTraceParam
 {
-	RayTraceParam(int Start, int End, unsigned char* Data, int Nx, int Ny, int NChannel, int Ns,
-		Camera* camerA, Scence* scencE, int MaxTraceDepth, float* EndNumber)
-		: start(Start), end(End), imageData(Data), nx(Nx), ny(Ny), nChannel(NChannel), ns(Ns),
-		camera(camerA), scence(scencE),
-		maxTraceDepth(MaxTraceDepth), endNumber(EndNumber), isMainExit(nullptr)
+	RayTraceParam(int Start, int End, Scence* scencE, float* EndNumber)
+		: start(Start), end(End), scence(scencE),
+		endNumber(EndNumber), isMainExit(nullptr)
 	{}
-	RayTraceParam(int Start, int End, unsigned char* Data, int Nx, int Ny, int NChannel, int Ns,
+	RayTraceParam(int Start, int End, int Nx, int Ny, int NChannel, int Ns,
 		Camera* camerA, Scence* scencE, int MaxTraceDepth, float* EndNumber, bool* IsMainExit)
-		: start(Start), end(End), imageData(Data), nx(Nx), ny(Ny), nChannel(NChannel), ns(Ns),
-		camera(camerA), scence(scencE),
-		maxTraceDepth(MaxTraceDepth), endNumber(EndNumber), isMainExit(IsMainExit)
+		: start(Start), end(End), scence(scencE),
+		endNumber(EndNumber), isMainExit(IsMainExit)
 	{}
 	int start, end;
-	unsigned char* imageData;
-	int nx, ny, nChannel, ns;
-	Camera* camera;
 	Scence* scence;
-	int maxTraceDepth;
 	float* endNumber;
 	bool* isMainExit;
 };
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+//void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+//void processInput(GLFWwindow* window);
 
-int DrawWindow();
+int DrawWindow(int w, int h, int ch, unsigned char* data);
 
 void RayTraceThread(RayTraceParam* param);
 
-int run(int threadIndex, ofstream& out)
+int run(ofstream& out, Scence& scence)
 {
-	out << "线程指数: " << threadIndex << "\n";
-
-	int nx = 512; //  宽
-	int ny = 288; //  高
-	int nChannel = 3; //  颜色通道数量
-	int ns = 150; //  抗锯齿(蒙特卡洛采样)
-	int maxTraceDepth = 10;
-	unsigned char* imageData = (unsigned char*)malloc(sizeof(unsigned char) * nx * ny * nChannel);
-
-	HitList* world = NULL;
-	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
-	
-	//scence.LoadSomeBalls();
-	scence.LoadIntersectionBall();
-	//scence.LoadUnionBall();
-	//scence.LoadDifferenceBall();
-	//scence.LoadRandomBall();
-	//scence.LoadCornellBox();
-
-	world = scence.GetWorld();
-	Camera* camera = scence.GetCamera();
-
-	if (camera == nullptr || world == nullptr)
-		return -1;
-
 	Ray r;
 	Color color;
-#ifdef REDUCE_INEGRATE
-	out << "是否开启采样优化: 是\n";
-	cout << "是否开启采样优化: 是\n";
+#ifdef SAMPLE_OPTIMIZATION
+	out << "Is the sampling optimization allowed? : Y\n";
+	cout << "Is the sampling optimization allowed? : Y\n";
 #else
-	out << "是否开启采样优化: 否\n";
-	cout << "是否开启采样优化: 否\n";
+	out << "Is the sampling optimization allowed? : N\n";
+	cout << "Is the sampling optimization allowed? : N\n";
 #endif // REDUCE_INEGRATE
 
-	out << "第" << threadIndex << "次渲染准备\n";
-	out << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
-		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
-	cout << "渲染质量: " << nx << "*" << ny << ", 蒙特卡洛采样次数: "
-		<< ns << ", 探测深度: " << maxTraceDepth << ".\n";
-	out << "场景体数量:" << (*world).size << ", 光圈: " << camera->aperture << ".\n";
-	if (nChannel > 4)
+	out << "Render quality: " << scence.width << "*" << scence.height << ", sample numbers: "
+		<< scence.sample << ", tracing depth: " << scence.maxTraceDepth << ".\n";
+	cout << "Render quality: " << scence.width << "*" << scence.height << ", sample numbers: "
+		<< scence.sample << ", tracing depth: " << scence.maxTraceDepth << ".\n";
+	out << "Scence objects number(s):" << scence.GetWorld()->size << ", aperture: " << scence.GetCamera()->aperture << ".\n";
+	if (scence.channel > 4)
 	{
-		out << "颜色通道大于4, 退出.\n";
-		cout << "颜色通道大于4, 退出.\n";
-		return 1;
-	}
-	if (imageData == nullptr)
-	{
-		out << "申请图形空间错误, 退出.\n";
-		cout << "申请图形空间错误, 退出.\n";
-		return 1;
+		out << "Channels of color are more than 4, exit.\n";
+		cout << "Channels of color are more than 4, exit.\n";
+		return EXIT_FAILURE;
 	}
 	time_t startTime;
 
@@ -135,15 +99,15 @@ int run(int threadIndex, ofstream& out)
 		GetSystemInfo(&systemInfo);
 		int coreNum = (int)(systemInfo.dwNumberOfProcessors);
 		int threadNum = coreNum - 2;
-		int taskNum = threadNum * min(max(1, nx / 256), 20);
-		//int taskNum = threadNum * threadIndex;
-		out << "渲染模式: " << "多线程; ";
-		out << "任务数: " << taskNum << "\n"; cout << "任务数: " << taskNum << "\n";
-		cout << "准备开始渲染" << endl;
+		int taskNum = threadNum * min(max(1, scence.width / 256), 20);
+
+		out << "Render mode: " << "Multi-thread";
+		out << "Task number(s): " << taskNum << "\n"; cout << "Task number(s): " << taskNum << "\n";
+		cout << "Ready to render." << endl;
 		system("pause");
 
-		out << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
-		startTime = clock(); //  开始时间
+		out << "Start rendering..." << "\n"; cout << "Start rendering..." << "\n";
+		startTime = clock(); //  rendering start time
 
 		thread** rtThread = (thread**)malloc(sizeof(thread*) * threadNum);
 
@@ -156,8 +120,8 @@ int run(int threadIndex, ofstream& out)
 			endFlag[curTask] = 0.0f;
 			
 			rtThread[curTask] = new thread(RayTraceThread, new RayTraceParam(
-				(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-				nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[curTask])
+				(int)(curTask * scence.height / taskNum), (int)((curTask + 1) * scence.height / taskNum),
+				&scence, &endFlag[curTask])
 			);
 		}
 
@@ -186,8 +150,8 @@ int run(int threadIndex, ofstream& out)
 						delete rtThread[i];
 						endFlag[i] = 0.0f;
 						rtThread[i] = new thread(RayTraceThread, new RayTraceParam(
-							(int)(curTask * ny / taskNum), (int)((curTask + 1) * ny / taskNum), imageData,
-							nx, ny, nChannel, ns, camera, &scence, maxTraceDepth, &endFlag[i])
+							(int)(curTask * scence.height / taskNum), (int)((curTask + 1) * scence.height / taskNum),
+							&scence,&endFlag[i])
 						);
 						curTask++;
 						curEndTask++;
@@ -211,15 +175,15 @@ int run(int threadIndex, ofstream& out)
 			if (sTime >= 100)
 			{
 				//system("cls");
-				printf("\r进度: %3.0f%%          ", (curRate + curEndTask) / (float)(taskNum) * 100);
+				printf("\rLoading: %3.0f%%          ", (curRate + curEndTask) / (float)(taskNum) * 100);
 				sTime = 0;
 			}
 
 			if (endNum == threadNum && curTask == taskNum)
 			{
 				//system("cls");
-				printf("\r渲染完成.%3.0f%%    \n\n", (curTask) / (float)(taskNum) * 100);
-				out << "渲染完成.\n";
+				printf("\rrendering compeleted. %3.0f%%      \n\n", (curTask) / (float)(taskNum) * 100);
+				out << "rendering compeleted.\n";
 				break;
 			}
 		}
@@ -238,6 +202,7 @@ int run(int threadIndex, ofstream& out)
 		float curRate = 0.0f;
 		cout << "准备开始渲染" << endl;
 		system("pause");
+
 		out << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
 		cout << "开始渲染..." << "\n"; cout << "开始渲染..." << "\n";
 
@@ -254,45 +219,44 @@ int run(int threadIndex, ofstream& out)
 					cTime = clock();
 					if (sTime >= 100 && (*curRate) < 1.5f)
 					{
-						system("cls");
-						printf("\r进度: %3.0f%%        ", (*curRate) * 100);
+						printf("\r进度: %3.0f%%          ", (*curRate) * 100);
 						sTime = 0;
 					}
 				}
 			}, &curRate).detach();
 			int deep = 1;
 			int intersectionTimes = 0;
-			int tryNs = min(ns, max(20, ns / 10));
+			int tryNs = min(scence.sample, max(20, scence.sample / 10));
 			float u, v;
-			for (int j = 0; j < ny; j++)
+			for (int j = 0; j < scence.height; j++)
 			{
-				for (int i = 0; i < nx; i++)
+				for (int i = 0; i < scence.width; i++)
 				{
 					color.rgb = Vector3::Zero;
-#ifdef REDUCE_INEGRATE
+#ifdef SAMPLE_OPTIMIZATION
 					intersectionTimes = 0;
-					//先试着采样ns/10次
+					//先试着采样scence.sample/10次
 					for (int k = 0; k < tryNs; k++)
 					{
 						deep = 1;
-						u = float(i + RayMath::Drand48()) / float(nx);
-						v = float(j + RayMath::Drand48()) / float(ny);
-						r = camera->GetRay(u, v);
-						color.rgb += RayTracer(r, &scence, maxTraceDepth, deep);
+						u = float(i + RayMath::Drand48()) / float(scence.width);
+						v = float(j + RayMath::Drand48()) / float(scence.height);
+						r = scence.GetCamera()->GetRay(u, v);
+						color.rgb += RayTracer(r, &scence, scence.maxTraceDepth, deep);
 						if (deep > 1)intersectionTimes++;
 					}
 					//如果大概率深度大于1
 					if (intersectionTimes > tryNs * 0.8)
 					{
 						//继续采样
-						for (int k = 0; k < ns - tryNs; k++)
+						for (int k = 0; k < scence.sample - tryNs; k++)
 						{
-							u = float(i + RayMath::Drand48()) / float(nx);
-							v = float(j + RayMath::Drand48()) / float(ny);
-							r = camera->GetRay(u, v);
-							color.rgb += RayTracer(r, &scence, maxTraceDepth);
+							u = float(i + RayMath::Drand48()) / float(scence.width);
+							v = float(j + RayMath::Drand48()) / float(scence.height);
+							r = scence.GetCamera()->GetRay(u, v);
+							color.rgb += RayTracer(r, &scence, scence.maxTraceDepth);
 						}
-						color.rgb /= float(ns);
+						color.rgb /= float(scence.sample);
 					}
 					else
 					{
@@ -300,38 +264,37 @@ int run(int threadIndex, ofstream& out)
 					}
 #else
 					float u, v;
-					for (int k = 0; k < ns; k++)
+					for (int k = 0; k < scence.sample; k++)
 					{
-						u = float(i + RayMath::Drand48()) / float(nx);
-						v = float(j + RayMath::Drand48()) / float(ny);
-						r = camera->GetRay(u, v);
-						color.rgb += RayTracer(r, &scence, maxTraceDepth);
+						u = float(i + RayMath::Drand48()) / float(scence.width);
+						v = float(j + RayMath::Drand48()) / float(scence.height);
+						r = scence.GetCamera()->GetRay(u, v);
+						color.rgb += RayTracer(r, &scence, scence.maxTraceDepth);
 					}
-					color.rgb /= float(ns);
+					color.rgb /= float(scence.sample);
 #endif // REDUCE_INEGRATE
 					color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
-					for (int ch = 0; ch < nChannel; ch++)
+					for (int ch = 0; ch < scence.channel; ch++)
 					{
-						imageData[j * nx * nChannel + i * nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
+						scence.GetImageBuffer()[j * scence.width * scence.channel + i * scence.channel + ch] = (unsigned char)(TO_RGB * color[ch]);
 					}
 				}
-				curRate = j / (float)ny;
+				curRate = j / (float)scence.height;
 			}
 
 			curRate = 2.0f;
 	}
 
-	out << "第" << threadIndex << "次离线渲染结束,用时: "
+	out << "Under line rendering compeleted, with time: "
 		<< (float)(clock() - startTime) / 1000.0f
 		<< "s.\n--------------------------\n";
-	cout << "第" << threadIndex << "次离线渲染结束,用时: "
+	cout << "Under line rendering compeleted, with time: "
 		<< (float)(clock() - startTime) / 1000.0f
 		<< "s.\n--------------------------\n";
 	stbi_flip_vertically_on_write(true);
-	stbi_write_bmp("outImage.bmp", nx, ny, nChannel, imageData);
-	cout << "输出图像完毕" << endl;
+	stbi_write_bmp("outImage.bmp", scence.width, scence.height, scence.channel, scence.GetImageBuffer());
+	cout << "Image Output Compeleted" << endl;
 	system("outImage.bmp");
-	free(imageData);
 
 	return 0;
 }
@@ -353,83 +316,96 @@ int main()
 	ctime_s(dt, sizeof dt, &now);
 	testOut << dt << "\n";
 
-	testOut << "渲染日志: \n\n";
+	testOut << "Rendering Log: \n\n";
 	
-	//new thread(DrawWindow);
+	int nx = 512; //  width
+	int ny = 288; //  height
+	int nChannel = 3; //  channel of color (rgb or rgba)
+	int ns = 100; //  sample times 
+	int maxTraceDepth = 20; //  max ray tracing depth
 
-	for (int i = 1; i <= 1; i++)
+	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
+
+	//scence.LoadSomeBalls();
+	scence.LoadIntersectionBall();
+	//scence.LoadUnionBall();
+	//scence.LoadDifferenceBall();
+	//scence.LoadRandomBall();
+	//scence.LoadCornellBox();
+
+	if (scence.GetCamera() == nullptr || scence.GetWorld() == nullptr)
 	{
-		if (run(i, testOut) == 1)
-			return 1;
+		std::cerr << "Scence Load Failed.\n";
+		return EXIT_FAILURE;
 	}
+
+	new thread(DrawWindow, scence.width, scence.height, scence.channel, scence.GetImageBuffer());
+
+	run(testOut, scence);
 
 	testOut.close();
 	system("pause");
 
-	return 0;
-
-
+	return EXIT_SUCCESS;
 }
 
-int DrawWindow()
+/// <summary>
+/// render the image to window in real-time
+/// </summary>
+/// <returns></returns>
+int DrawWindow(int w, int h, int ch, unsigned char* data)
 {
-	sf::RenderWindow App(sf::VideoMode(512, 288),"Rendering Dialog", CannotResize);
-	
-	while (App.isOpen())
-	{
-		sf::Event ev;
-		while (App.pollEvent(ev))
-		{
-			if (ev.type == sf::Event::Closed || (KeyPressing && KeyEvent(sf::Keyboard::Key::Escape)))
-			{
-				App.close();
-			}
-		}
+	printf("Open window.\n");
 
-		App.clear(sf::Color(40, 40, 40, 255));
+	render::RenderWindow window(w, h, "window");
+	window.renderTarget.LoadFromMemory(w, h, ch, data);
 
-		App.display();
-	}
+	window.Run();
+
 	return 0;
 }
 
+/// <summary>
+/// thread of ray tracing
+/// </summary>
+/// <param name="param">the scence and some other data to thread</param>
 void RayTraceThread(RayTraceParam* param)
 {
 	Color color;
 	Ray r;
 	int deep = 1;
 	int intersectionTimes = 0;
-	int tryNs = min(param->ns, max(20, param->ns / 10));
+	int tryNs = min(param->scence->sample, max(20, param->scence->sample / 10));
 	float u, v;
 	for (int j = param->start; j < param->end; j++)
 	{
-		for (int i = 0; i < param->nx; i++)
+		for (int i = 0; i < param->scence->width; i++)
 		{
 			color.rgb = Vector3::Zero;
-#ifdef REDUCE_INEGRATE
+#ifdef SAMPLE_OPTIMIZATION
 			intersectionTimes = 0;
 			//先试着采样ns/10次
 			for (int k = 0; k < tryNs; k++)
 			{
 				deep = 1;
-				u = float(i + RayMath::Drand48()) / float(param->nx);
-				v = float(j + RayMath::Drand48()) / float(param->ny);
-				r = param->camera->GetRay(u, v);
-				color.rgb += RayTracer(r, param->scence, param->maxTraceDepth, deep);
+				u = float(i + RayMath::Drand48()) / float(param->scence->width);
+				v = float(j + RayMath::Drand48()) / float(param->scence->height);
+				r = param->scence->GetCamera()->GetRay(u, v);
+				color.rgb += RayTracer(r, param->scence, param->scence->maxTraceDepth, deep);
 				if (deep > 1)intersectionTimes++;
 			}
 			//如果大概率深度大于1
 			if (intersectionTimes > tryNs * 0.8)
 			{
 				//继续采样
-				for (int k = 0; k < param->ns - tryNs; k++)
+				for (int k = 0; k < param->scence->sample - tryNs; k++)
 				{
-					u = float(i + RayMath::Drand48()) / float(param->nx);
-					v = float(j + RayMath::Drand48()) / float(param->ny);
-					r = param->camera->GetRay(u, v);
-					color.rgb += RayTracer(r, param->scence, param->maxTraceDepth);
+					u = float(i + RayMath::Drand48()) / float(param->scence->width);
+					v = float(j + RayMath::Drand48()) / float(param->scence->height);
+					r = param->scence->GetCamera()->GetRay(u, v);
+					color.rgb += RayTracer(r, param->scence, param->scence->maxTraceDepth);
 				}
-				color.rgb /= float(param->ns);
+				color.rgb /= float(param->scence->sample);
 			}
 			else
 			{
@@ -437,14 +413,14 @@ void RayTraceThread(RayTraceParam* param)
 			}
 #else
 			float u, v;
-			for (int k = 0; k < param->ns; k++)
+			for (int k = 0; k < param->scence->sample; k++)
 			{
-				u = float(i + RayMath::Drand48()) / float(param->nx);
-				v = float(j + RayMath::Drand48()) / float(param->ny);
-				r = param->camera->GetRay(u, v);
-				color.rgb += RayTracer(r, param->scence, param->maxTraceDepth);
+				u = float(i + RayMath::Drand48()) / float(param->scence->width);
+				v = float(j + RayMath::Drand48()) / float(param->scence->height);
+				r = param->scence->GetCamera()->GetRay(u, v);
+				color.rgb += RayTracer(r, param->scence, param->scence->maxTraceDepth);
 			}
-			color.rgb /= float(param->ns);
+			color.rgb /= float(param->scence->sample);
 #endif // REDUCE_INEGRATE
 			
 			color[0] = min(color[0], 1.0f);
@@ -452,24 +428,14 @@ void RayTraceThread(RayTraceParam* param)
 			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
 			
-			for (int ch = 0; ch < param->nChannel; ch++)
+			for (int ch = 0; ch < param->scence->channel; ch++)
 			{
-				param->imageData[j * param->nx * param->nChannel + i * param->nChannel + ch] = (unsigned char)(TO_RGB * color[ch]);
+				param->scence->GetImageBuffer()
+					[j * param->scence->width * param->scence->channel +
+					i * param->scence->channel + ch] = (unsigned char)(TO_RGB * color[ch]);
 			}
 		}
 		(*param->endNumber) = (float)(j - param->start) / (float)(param->end - param->start);
 	}
 	(*param->endNumber) = 1.1f;
-	//printf("完成任务:%d\n", task);
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
-	glViewport(0, 0, width, height);
-}
-
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
 }

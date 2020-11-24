@@ -407,27 +407,6 @@ namespace sdf
 			return isHited;
 		}
 
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			// TODO ªπ√ª∏„ÕÍ
-			/*HitRecord recTmp;
-			recTmp.mat = near.mat;
-			float closet_so_far = tMax;
-			bool isHited = false;
-			for (int i = 0; i < 6; i++)
-			{
-				if (face[i]->Hit(r, tMin, closet_so_far, recTmp, sdfRec))
-				{
-					isHited = true;
-					near = recTmp;
-					closet_so_far = near.t;
-				}
-			}
-			return isHited;*/
-		}
-
-
 		virtual bool sdf(const Vector3& p, float& sdfResult)const
 		{
 			return false;

@@ -31,6 +31,18 @@
     <Filter Include="头文件\hit\Geometry">
       <UniqueIdentifier>{6255426c-8923-4232-9db0-88c83cc61b33}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\rtx">
+      <UniqueIdentifier>{09471e25-0038-42c1-9d17-1933356c3a11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\rtx\render">
+      <UniqueIdentifier>{1a2f9a1c-6ca7-4d03-bc5d-aa3ae305a8f4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\rtx\util">
+      <UniqueIdentifier>{54e19af3-d42f-4db3-9cb9-fa0f14df348c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\rtx">
+      <UniqueIdentifier>{85098610-f2d3-4ac4-8514-f5e530f7113d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -56,6 +68,12 @@
     </ClCompile>
     <ClCompile Include="glad.c">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="rtx\Shader.cpp">
+      <Filter>源文件\rtx</Filter>
+    </ClCompile>
+    <ClCompile Include="rtx\RenderWindow.cpp">
+      <Filter>源文件\rtx</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -133,6 +151,18 @@
     </ClInclude>
     <ClInclude Include="DifferenceHit.h">
       <Filter>头文件\hit\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="rtx\util\Color.h">
+      <Filter>头文件\rtx\util</Filter>
+    </ClInclude>
+    <ClInclude Include="rtx\render\Image.h">
+      <Filter>头文件\rtx\render</Filter>
+    </ClInclude>
+    <ClInclude Include="rtx\render\Shader.h">
+      <Filter>头文件\rtx\render</Filter>
+    </ClInclude>
+    <ClInclude Include="rtx\render\RenderWindow.h">
+      <Filter>头文件\rtx\render</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
