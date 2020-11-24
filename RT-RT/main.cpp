@@ -16,6 +16,9 @@ int main()
 	sf::RenderWindow App(sf::VideoMode(width, height), "Real-Time Ray Tracing",
 		sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 
+	sf::Texture img;
+	
+
 	while (App.isOpen())
 	{
 		sf::Event ev;
