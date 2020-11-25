@@ -10255,27 +10255,15 @@ Mon Nov 23 23:41:56 2020
 线程指数: 1
 是否开启采样优化: 否
 第1次渲染准备
-渲染质量: 512*288, 蒙特卡洛采样次数: 150, 蘔ed Nov 25 02:28:51 2020
+渲染质量: 512*288, 蒙特卡洛采样次数: 150, 蘔ed Nov 25 10:18:16 2020
 
 Rendering Log: 
 
-Is the sampling optimization allowed? : Y
-Render quality: 512*512, sample numbers: 512, tracing depth: 20.
+Is the sampling optimization allowed? : N
+Render quality: 800*600, sample numbers: 800, tracing depth: 4.
 Scence objects number(s):9, aperture: 0.
-Render mode: Multi-threadTask number(s): 28
+Render mode: Multi-threadTask number(s): 6
 Start rendering...
 rendering compeleted.
-Under line rendering compeleted, with time: 7.677s.
---------------------------
-Wed Nov 25 02:29:24 2020
-
-Rendering Log: 
-
-Is the sampling optimization allowed? : Y
-Render quality: 512*288, sample numbers: 512, tracing depth: 20.
-Scence objects number(s):9, aperture: 0.
-Render mode: Multi-threadTask number(s): 28
-Start rendering...
-rendering compeleted.
-Under line rendering compeleted, with time: 5.17s.
+Under line rendering compeleted, with time: 336.352s.
 --------------------------

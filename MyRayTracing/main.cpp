@@ -20,7 +20,7 @@ using namespace rtx;
 #if !_DEBUG
 #define MULTI_THREAD 1
 //Sample Optimization (When tracing depth = 1, do NOT sample
-#define SAMPLE_OPTIMIZATION
+//#define SAMPLE_OPTIMIZATION
 #else
 #define MULTI_THREAD 0
 #endif // _DEBUG
@@ -301,7 +301,11 @@ int run(ofstream& out, Scence& scence)
 
 int main()
 {
+
 	RayMath::Srand48((unsigned int)time(NULL));
+
+#pragma region Load Log
+
 	ifstream testReader("renderLog.txt");
 	string oldLog((std::istreambuf_iterator<char>(testReader)),
 		std::istreambuf_iterator<char>());
@@ -317,12 +321,14 @@ int main()
 	testOut << dt << "\n";
 
 	testOut << "Rendering Log: \n\n";
+
+#pragma endregion
 	
-	int nx = 512; //  width
-	int ny = 288; //  height
+	int nx = 800; //  width
+	int ny = 600; //  height
 	int nChannel = 3; //  channel of color (rgb or rgba)
-	int ns = 100; //  sample times 
-	int maxTraceDepth = 20; //  max ray tracing depth
+	int ns = 20; //  sample times 
+	int maxTraceDepth = 4; //  max ray tracing depth
 
 	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
 
