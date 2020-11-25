@@ -96,11 +96,8 @@ void Scence::LoadIntersectionBall()
 		[](const float& u, const float& v, const Vector3& p)->Vector3
 		{
 			return { 0,0,0 };
-			float t = 0.5f * (p[1] + 1.0f);
-			return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
 		}
 	)
-		//new Image_Texture("red_hill_curve.jpg")
 		, 0.8f));
 }
 
@@ -132,7 +129,7 @@ void Scence::LoadUnionBall()
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));
 
 	skybox = new Skybox(new Illumination(
-		new Image_Texture("skybox.jpg")
+		new Image_Texture("../data/texture/skybox.jpg")
 		, 0.8f));
 }
 
@@ -164,7 +161,7 @@ void Scence::LoadDifferenceBall()
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));*/
 
 	skybox = new Skybox(new Illumination(
-		new Image_Texture("red_hill_curve.jpg")
+		new Image_Texture("../data/texture/red_hill_curve.jpg")
 		, 1.0f));
 }
 
@@ -180,7 +177,18 @@ void Scence::LoadRandomBall()
 
 	world->AddHitable(new Sphere(
 		new SdfSphere(Vector3(0, -1000.1f, 1.0f), 1000.0f),
-		new Lambertian(new Constant_Texture(Vector3(1.0f, 1.0f, 1.0f)))
+		new Lambertian(
+			new Customize_Texture([](const float& u, const float& v, const Vector3& p)->Vector3 {
+			float sine = sin(4.0f * p[0]) * sin(4.0f * p[1]) * sin(4.0f * p[2]);
+			if (sine > 0)
+			{
+				return { 0.1f,0.45f,0.1f }; //  DarkGreen
+			}
+			else
+			{
+				return { 0.8f,0.8f,0.8f }; //  Black
+			}
+			}))
 	));
 	world->AddHitable(new Sphere(
 		new SdfSphere(Vector3(3.02f, 1.0f, -1.0f), 1.0f),
@@ -209,7 +217,7 @@ void Scence::LoadRandomBall()
 			return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
 		}
 	)*/
-		new Image_Texture("skybox.jpg")
+		new Image_Texture("../data/texture/skybox.jpg")
 		, 0.8f));
 }
 
@@ -273,7 +281,7 @@ void Scence::LoadCornellBox()
 		new Lambertian(new Constant_Texture({ 0.65f,0.05f,0.05f }))));
 
 	world->AddHitable(new Rect(new SdfRect_xz(213, 227, 343, 332, 554),
-		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 10.0f)));
+		new Illumination(new Constant_Texture({ 1.0f,1.0f,1.0f }), 20.0f)));
 
 	world->AddHitable(new Box(
 		new SdfTranslate(new SdfRotate_Y(new SdfBox({ 0,0,0 }, { 165,165,165 }), -18), { 130,0,65 })
@@ -283,20 +291,20 @@ void Scence::LoadCornellBox()
 		new SdfTranslate(new SdfRotate_Y(new SdfBox({ 0,0,0 }, { 165,330,165 }), 15), { 265,0,295 })
 		, new Lambertian(new Constant_Texture({ 1.0f,1.0f,1.0f }))));
 
-	/*world->AddHitable(new Sphere(new SdfSphere({ 212.5f,235.0f,147.5f }, 70.0f),
-		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));
+	world->AddHitable(new Sphere(new SdfSphere({ 212.5f,235.0f,147.5f }, 70.0f),
+		new Dielectric(new Constant_Texture({ 1.0f,0.5f,0.6f }), 1.7f)));
 
 	world->AddHitable(new Sphere(new SdfSphere({ 347.5f,420.0f,377.5f }, 90.0f),
-		new Lambertian(new Constant_Texture({ 0.4f,0.4f,1.0f }))));*/
+		new Metal(new Constant_Texture({ 0.4f,0.4f,1.0f }), 0.0f)));
 
 	// skybox init
 	skybox = new Skybox(new Illumination(
 		new Customize_Texture(
 			[](const float& u, const float& v, const Vector3& p)->Vector3
 			{
-				float t = 0.5f * (p[1] + 1.0f);
-				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
-				//return { 0,0,0 };
+				//float t = 0.5f * (p[1] + 1.0f);
+				//return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.3f, 0.5f, 0.9f);
+				return { 0,0,0 };
 			})
 		, 1.0f));
 }

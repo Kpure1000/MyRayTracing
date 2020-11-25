@@ -63,7 +63,7 @@ int DrawWindow(int w, int h, int ch, unsigned char* data);
 
 void RayTraceThread(RayTraceParam* param);
 
-int run(ofstream& out, Scence& scence)
+int run(ofstream& out, Scence& scence, const std::string& imageFileName)
 {
 	Ray r;
 	Color color;
@@ -87,6 +87,7 @@ int run(ofstream& out, Scence& scence)
 		return EXIT_FAILURE;
 	}
 	time_t startTime;
+	time_t endTime = 0;
 
 #ifndef MULTI_THREAD
 #else
@@ -103,12 +104,12 @@ int run(ofstream& out, Scence& scence)
 
 		out << "Render mode: " << "Multi-thread";
 		out << "Task number(s): " << taskNum << "\n"; cout << "Task number(s): " << taskNum << "\n";
-		cout << "Ready to render." << endl;
-		system("pause");
+		cout << "Render will start in 2s...\n\n" << endl;
+
+		std::this_thread::sleep_for(std::chrono::seconds(2));
 
 		out << "Start rendering..." << "\n"; cout << "Start rendering..." << "\n";
 		startTime = clock(); //  rendering start time
-
 		thread** rtThread = (thread**)malloc(sizeof(thread*) * threadNum);
 
 		float* endFlag = (float*)malloc(sizeof(float) * threadNum);
@@ -118,7 +119,7 @@ int run(ofstream& out, Scence& scence)
 		for (; curTask < threadNum; curTask++)
 		{
 			endFlag[curTask] = 0.0f;
-			
+
 			rtThread[curTask] = new thread(RayTraceThread, new RayTraceParam(
 				(int)(curTask * scence.height / taskNum), (int)((curTask + 1) * scence.height / taskNum),
 				&scence, &endFlag[curTask])
@@ -151,7 +152,7 @@ int run(ofstream& out, Scence& scence)
 						endFlag[i] = 0.0f;
 						rtThread[i] = new thread(RayTraceThread, new RayTraceParam(
 							(int)(curTask * scence.height / taskNum), (int)((curTask + 1) * scence.height / taskNum),
-							&scence,&endFlag[i])
+							&scence, &endFlag[i])
 						);
 						curTask++;
 						curEndTask++;
@@ -174,20 +175,23 @@ int run(ofstream& out, Scence& scence)
 			cTime = clock();
 			if (sTime >= 100)
 			{
-				//system("cls");
-				printf("\rLoading: %3.0f%%          ", (curRate + curEndTask) / (float)(taskNum) * 100);
+				float curLoading = (curRate + curEndTask) / (float)(taskNum);
+				time_t renderTime = clock() - startTime;
+				//if (curLoading < 1e-3f)curLoading = 1e-3f;
+				printf("\rLoading: %3.2f/100.00 %%, took time of %ld/%ld s           ",
+					curLoading * 100, renderTime / 1000, (long)(renderTime / max(0.015f, curLoading) / 1000));
 				sTime = 0;
 			}
 
 			if (endNum == threadNum && curTask == taskNum)
 			{
 				//system("cls");
-				printf("\rrendering compeleted. %3.0f%%      \n\n", (curTask) / (float)(taskNum) * 100);
+				printf("\rrendering compeleted. %3.0f%%                                 \n\n", (curTask) / (float)(taskNum) * 100);
 				out << "rendering compeleted.\n";
 				break;
 			}
 		}
-
+		endTime = clock();
 		for (int i = 0; i < threadNum; i++)
 		{
 			delete rtThread[i];
@@ -285,16 +289,19 @@ int run(ofstream& out, Scence& scence)
 			curRate = 2.0f;
 	}
 
-	out << "Under line rendering compeleted, with time: "
-		<< (float)(clock() - startTime) / 1000.0f
+	out << "CPU rendering compeleted, with time of "
+		<< (float)(endTime - startTime) / 1000.0f
 		<< "s.\n--------------------------\n";
-	cout << "Under line rendering compeleted, with time: "
-		<< (float)(clock() - startTime) / 1000.0f
+	cout << "CPU rendering compeleted, with time of "
+		<< (float)(endTime - startTime) / 1000.0f
 		<< "s.\n--------------------------\n";
 	stbi_flip_vertically_on_write(true);
-	stbi_write_bmp("outImage.bmp", scence.width, scence.height, scence.channel, scence.GetImageBuffer());
+	stbi_write_jpg(imageFileName.c_str(), scence.width, scence.height, scence.channel, scence.GetImageBuffer(), 0);
 	cout << "Image Output Compeleted" << endl;
-	system("outImage.bmp");
+
+	system(imageFileName.c_str());
+
+	std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	return 0;
 }
@@ -306,12 +313,12 @@ int main()
 
 #pragma region Load Log
 
-	ifstream testReader("renderLog.txt");
+	ifstream testReader("cpuRenderLog.txt");
 	string oldLog((std::istreambuf_iterator<char>(testReader)),
 		std::istreambuf_iterator<char>());
 	testReader.close();
 
-	ofstream testOut("renderLog.txt");
+	ofstream testOut("cpuRenderLog.txt");
 
 	testOut << oldLog;
 
@@ -323,20 +330,20 @@ int main()
 	testOut << "Rendering Log: \n\n";
 
 #pragma endregion
-	
-	int nx = 800; //  width
-	int ny = 600; //  height
-	int nChannel = 3; //  channel of color (rgb or rgba)
-	int ns = 20; //  sample times 
-	int maxTraceDepth = 4; //  max ray tracing depth
 
-	Scence scence(nx, ny, nChannel, nx, maxTraceDepth);
+	int nx = 512; //  width
+	int ny = 288; //  height
+	int nChannel = 3; //  channel of color (rgb or rgba)
+	int ns = 100; //  sample times 
+	int maxTraceDepth = 5; //  max ray tracing depth
+
+	Scence scence(nx, ny, nChannel, ns, maxTraceDepth);
 
 	//scence.LoadSomeBalls();
-	scence.LoadIntersectionBall();
+	//scence.LoadIntersectionBall();
 	//scence.LoadUnionBall();
 	//scence.LoadDifferenceBall();
-	//scence.LoadRandomBall();
+	scence.LoadRandomBall();
 	//scence.LoadCornellBox();
 
 	if (scence.GetCamera() == nullptr || scence.GetWorld() == nullptr)
@@ -346,8 +353,9 @@ int main()
 	}
 
 	new thread(DrawWindow, scence.width, scence.height, scence.channel, scence.GetImageBuffer());
+	std::this_thread::sleep_for(std::chrono::seconds(2));
 
-	run(testOut, scence);
+	run(testOut, scence, "outImage.bmp");
 
 	testOut.close();
 	system("pause");
@@ -361,9 +369,7 @@ int main()
 /// <returns></returns>
 int DrawWindow(int w, int h, int ch, unsigned char* data)
 {
-	printf("Open window.\n");
-
-	render::RenderWindow window(w, h, "window");
+	render::RenderWindow window(w, h, "Ray-Tracing CPU-Renderer @Kpure1000");
 	window.renderTarget.LoadFromMemory(w, h, ch, data);
 
 	window.Run();
@@ -428,12 +434,12 @@ void RayTraceThread(RayTraceParam* param)
 			}
 			color.rgb /= float(param->scence->sample);
 #endif // REDUCE_INEGRATE
-			
+
 			color[0] = min(color[0], 1.0f);
 			color[1] = min(color[1], 1.0f);
 			color[2] = min(color[2], 1.0f);
 			color.rgb = Vector3(sqrtf(color.r()), sqrtf(color.g()), sqrtf(color.b()));
-			
+
 			for (int ch = 0; ch < param->scence->channel; ch++)
 			{
 				param->scence->GetImageBuffer()

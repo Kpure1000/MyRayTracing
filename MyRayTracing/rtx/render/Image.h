@@ -29,6 +29,7 @@ namespace rtx
 				this->height = h;
 				this->channel = ch;
 				this->data = data;
+				CheckBuffer();
 			}
 
 			void LoadFromFile(const char* path)
@@ -36,6 +37,9 @@ namespace rtx
 				loadMode = Load_Mode::LOAD_FILE;
 				stbi_set_flip_vertically_on_load(true);
 				data = stbi_load(path, &width, &height, &channel, 0);
+				CheckBuffer();
+				if (data)printf("********Load Image Successed********\n* From File: \'%s\'\n* Properties: %dx%d, channel: %d\n\
+\************************************\n", path, width, height, channel);
 			}
 
 			void LoadFromFile(const char* path, bool isFlip)
@@ -43,6 +47,9 @@ namespace rtx
 				loadMode = Load_Mode::LOAD_FILE;
 				stbi_set_flip_vertically_on_load(isFlip);
 				data = stbi_load(path, &width, &height, &channel, 0);
+				CheckBuffer();
+				if (data)printf("********Load Image Successed********\n* From File: \'%s\'\n* Properties: %dx%d, channel: %d\n\
+\************************************\n", path, width, height, channel);
 			}
 
 			void Use()const
@@ -91,7 +98,22 @@ namespace rtx
 			int GetChannel() { return channel; }
 
 		private:
-
+			bool CheckBuffer()const
+			{
+				if (data == nullptr)
+				{
+					if (loadMode == Load_Mode::LOAD_FILE)
+					{
+						std::cerr << "Load Image Error: from file.\n";
+					}
+					else
+					{
+						std::cerr << "Load Image Error: from other source.\n";
+					}
+					return false;
+				}
+				return true;
+			}
 			int width, height, channel;
 			unsigned char* data;
 

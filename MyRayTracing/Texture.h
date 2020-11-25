@@ -68,7 +68,12 @@ namespace ry
 		{
 			stbi_set_flip_vertically_on_load(true);
 			data = stbi_load(filePath, &width, &height, &nChannel, 0);
-			if (data)printf("∂¡»°Õº∆¨≥…π¶: \'%s\': w:%d, h:%d, nc:%d .\n", filePath, width, height, nChannel);
+			if (data)printf("********Load Image Successed********\n* File Path: \'%s\'\n* Properties: %dx%d, channel: %d\n\
+\************************************\n", filePath, width, height, nChannel);
+			else
+			{
+				printf("Load Image Failed. file: \'%s\'\n", filePath);
+			}
 		}
 
 		virtual Vector3 Value(const float& u, const float& v, const Vector3& p)const
@@ -84,7 +89,12 @@ namespace ry
 				}
 				return re.rgb;
 			}
-			return { 0,0,0 };
+			else
+			{
+				//  if buffer is null, return skybox color
+				float t = 0.5f * (p[1] + 1.0f);
+				return (1.0f - t) * Vector3(1.0f, 1.0f, 1.0f) + t * Vector3(0.5f, 0.7f, 1.0f);
+			}
 		}
 
 		int width, height, nChannel;
