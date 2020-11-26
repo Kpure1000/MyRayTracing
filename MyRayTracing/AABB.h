@@ -20,14 +20,12 @@ namespace ry
 		{
 			rect[0] = pMin;
 			rect[1] = pMax;
-			rect[2] = (rect[0] + rect[1]) * 0.5f;
 		}
 
 		AABB(const Vector3& middle, const Vector3& pMin, const Vector3& pMax)
 		{
 			rect[0] = pMin;
 			rect[1] = pMax;
-			rect[2] = middle;
 		}
 
 		bool Hit(const Ray& r, float tMin, float tMax)const
@@ -62,7 +60,7 @@ namespace ry
 			return AABB(pMin, pMax);
 		}
 
-		Vector3 rect[3];
+		Vector3 rect[2];
 
 	};
 }

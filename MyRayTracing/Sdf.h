@@ -136,15 +136,8 @@ namespace sdf
 
 		virtual bool GetBBox(float t0, float t1, AABB& box)const
 		{
-			box.rect[0][0] = center[0] - radius;
-			box.rect[0][1] = center[1] - radius;
-			box.rect[0][2] = center[2] - radius;
-			box.rect[1][0] = center[0] + radius;
-			box.rect[1][1] = center[1] + radius;
-			box.rect[1][2] = center[2] + radius;
-			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
-			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
-			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
+			box.rect[0] = center - Vector3(radius, radius, radius);
+			box.rect[1] = center + Vector3(radius, radius, radius);
 			return true;
 		}
 
@@ -230,7 +223,6 @@ namespace sdf
 		{
 			box.rect[0] = rect[0] - Vector3(0, 0, 0.01f);
 			box.rect[1] = rect[1] + Vector3(0, 0, 0.01f);
-			box.rect[2] = (box.rect[0] + box.rect[1]) * 0.5f;
 			return true;
 		}
 
@@ -291,7 +283,6 @@ namespace sdf
 		{
 			box.rect[0] = rect[0] - Vector3(0, 0.01f, 0);
 			box.rect[1] = rect[1] + Vector3(0, 0.01f, 0);
-			box.rect[2] = (box.rect[0] + box.rect[1]) * 0.5f;
 			return true;
 		}
 
@@ -350,7 +341,6 @@ namespace sdf
 		{
 			box.rect[0] = rect[0] - Vector3(0.01f, 0, 0);
 			box.rect[1] = rect[1] + Vector3(0.01f, 0, 0);
-			box.rect[2] = (box.rect[0] + box.rect[1]) * 0.5f;
 			return true;
 		}
 
@@ -505,9 +495,6 @@ namespace sdf
 			box.rect[1][0] = min(boxA.rect[1][0], boxB.rect[1][0]);
 			box.rect[1][1] = min(boxA.rect[1][1], boxB.rect[1][1]);
 			box.rect[1][2] = min(boxA.rect[1][2], boxB.rect[1][2]);
-			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
-			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
-			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
 			return true;
 		}
 
@@ -533,7 +520,6 @@ namespace sdf
 			HitRecord farA ,farB; //  Åö×²½á¹û
 			SdfRecord sdfRA, sdfRB;
 			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
-			float discriminant;
 			isHitA = sdfs[0]->Hit(r, tMin, tMax, nearA, farA, sdfRA);
 			isHitB = sdfs[1]->Hit(r, tMin, tMax, nearB, farB, sdfRB);
 			float sdfResult;
@@ -586,9 +572,6 @@ namespace sdf
 			box.rect[1][0] = max(boxA.rect[1][0], boxB.rect[1][0]);
 			box.rect[1][1] = max(boxA.rect[1][1], boxB.rect[1][1]);
 			box.rect[1][2] = max(boxA.rect[1][2], boxB.rect[1][2]);
-			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
-			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
-			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
 			return true;
 		}
 
@@ -613,7 +596,6 @@ namespace sdf
 			HitRecord farA, farB; //  Åö×²½á¹û
 			SdfRecord sdfRA, sdfRB;
 			bool isHitA, isHitB; //  ÊÇ·ñÅö×²
-			float discriminant;
 			isHitA = sdfs[0]->Hit(r, tMin, tMax, nearA, farA, sdfRA);
 			isHitB = sdfs[1]->Hit(r, tMin, tMax, nearB, farB, sdfRB);
 			float sdfResult;
@@ -668,9 +650,6 @@ namespace sdf
 			box.rect[1][0] = max(boxA.rect[1][0], boxB.rect[1][0]);
 			box.rect[1][1] = max(boxA.rect[1][1], boxB.rect[1][1]);
 			box.rect[1][2] = max(boxA.rect[1][2], boxB.rect[1][2]);
-			box.rect[2][0] = (box.rect[0][0] + box.rect[1][0]) * 0.5f;
-			box.rect[2][1] = (box.rect[0][1] + box.rect[1][1]) * 0.5f;
-			box.rect[2][2] = (box.rect[0][2] + box.rect[1][2]) * 0.5f;
 			return true;
 		}
 
@@ -821,14 +800,6 @@ namespace sdf
 		float sinTheta, cosTheta;
 		bool hasBox;
 		AABB bBox;
-
-	private:
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& near, HitRecord& far, SdfRecord& sdfRec)const
-		{
-			return false;
-		}
 
 	};
 

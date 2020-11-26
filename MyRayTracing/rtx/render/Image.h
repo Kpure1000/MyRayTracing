@@ -39,7 +39,7 @@ namespace rtx
 				data = stbi_load(path, &width, &height, &channel, 0);
 				CheckBuffer();
 				if (data)printf("********Load Image Successed********\n* From File: \'%s\'\n* Properties: %dx%d, channel: %d\n\
-\************************************\n", path, width, height, channel);
+************************************\n", path, width, height, channel);
 			}
 
 			void LoadFromFile(const char* path, bool isFlip)
@@ -49,7 +49,7 @@ namespace rtx
 				data = stbi_load(path, &width, &height, &channel, 0);
 				CheckBuffer();
 				if (data)printf("********Load Image Successed********\n* From File: \'%s\'\n* Properties: %dx%d, channel: %d\n\
-\************************************\n", path, width, height, channel);
+************************************\n", path, width, height, channel);
 			}
 
 			void Use()const

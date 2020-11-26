@@ -267,7 +267,6 @@ int run(ofstream& out, Scence& scence, const std::string& imageFileName)
 						color.rgb /= float(tryNs);
 					}
 #else
-					float u, v;
 					for (int k = 0; k < scence.sample; k++)
 					{
 						u = float(i + RayMath::Drand48()) / float(scence.width);

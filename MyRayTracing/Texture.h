@@ -69,7 +69,7 @@ namespace ry
 			stbi_set_flip_vertically_on_load(true);
 			data = stbi_load(filePath, &width, &height, &nChannel, 0);
 			if (data)printf("********Load Image Successed********\n* File Path: \'%s\'\n* Properties: %dx%d, channel: %d\n\
-\************************************\n", filePath, width, height, nChannel);
+************************************\n", filePath, width, height, nChannel);
 			else
 			{
 				printf("Load Image Failed. file: \'%s\'\n", filePath);

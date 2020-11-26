@@ -43,3 +43,27 @@ Start rendering...
 rendering compeleted.
 CPU rendering compeleted, with time of 15.353s.
 --------------------------
+Thu Nov 26 12:29:44 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):403, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 28
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 15.112s.
+--------------------------
+Thu Nov 26 12:30:44 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 28
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 14.721s.
+--------------------------
