@@ -1,7 +1,8 @@
 #pragma once
 #include<SFML/Graphics.hpp>
-using namespace sf;
 #include"Ray.h"
+#include"AABB.h"
+using namespace sf;
 namespace sdf {
 	class Sdf;
 }
@@ -34,9 +35,14 @@ namespace ry
 
 		//返回射线碰撞数据record,射线被约束在tMin和tMax之间
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec) = 0;
+			const float& tMax, HitRecord& rec)const = 0;
 
-		virtual void SetMaterial(Material* mat) = 0;
+		virtual bool GetBBox(AABB& box)const
+		{
+			return false;
+		}
+
+		virtual void SetMaterial(Material* mat) {}
 
 		Material* material;
 

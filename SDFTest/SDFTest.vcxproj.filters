@@ -16,6 +16,18 @@
     <Filter Include="头文件\BVH">
       <UniqueIdentifier>{02dfcbe7-8c7c-4c9a-a84f-f032530b3ce6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\hit">
+      <UniqueIdentifier>{52612448-83f2-4007-ab6d-90d3019fb454}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\render">
+      <UniqueIdentifier>{69fa51c0-7721-4ac5-992e-993d21302fe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\sdf">
+      <UniqueIdentifier>{3189b1d4-4163-4627-b843-cb4a81ec3479}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\util">
+      <UniqueIdentifier>{07dfd867-f578-4e84-be26-9ab1077dbcea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="test_main.cpp">
@@ -26,47 +38,47 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Sdf.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Ray.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Hitable.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RayMath.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="RayLauncher.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="HitList.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Sphere.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MyCircle.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="InterHit.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="UnionHit.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="DifferenceHit.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="AABB.h">
       <Filter>头文件\BVH</Filter>
     </ClInclude>
     <ClInclude Include="BVH.h">
       <Filter>头文件\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Hitable.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="HitList.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="MyCircle.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="InterHit.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="UnionHit.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="DifferenceHit.h">
+      <Filter>头文件\hit</Filter>
+    </ClInclude>
+    <ClInclude Include="Ray.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="RayLauncher.h">
+      <Filter>头文件\render</Filter>
+    </ClInclude>
+    <ClInclude Include="Sdf.h">
+      <Filter>头文件\sdf</Filter>
+    </ClInclude>
+    <ClInclude Include="RayMath.h">
+      <Filter>头文件\util</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -6,10 +6,10 @@
 namespace ry
 {
 
-	class BNode : public Hitable
+	class BTNode : public Hitable
 	{
 	public:
-		BNode() 
+		BTNode()
 		{
 			sub[0] = sub[1] = nullptr;
 		}
@@ -20,8 +20,8 @@ namespace ry
 			if (box.Hit(r, tMin, tMax))
 			{
 				HitRecord recL, recR;
-				bool hitL = false; 
-				bool hitR = false; 
+				bool hitL = false;
+				bool hitR = false;
 				if (sub[0])hitL = sub[0]->Hit(r, tMin, tMax, recL);
 				if (sub[1])hitR = sub[1]->Hit(r, tMin, tMax, recR);
 				if (hitL && hitR)
@@ -32,7 +32,7 @@ namespace ry
 						rec = recR;
 					return true;
 				}
-				else if(hitL)
+				else if (hitL)
 				{
 					rec = recL;
 					return true;
@@ -73,25 +73,25 @@ namespace ry
 			printf("BVH有节点: %d个\n", count);*/
 		}
 
-		void VisitBVHTree(BNode* root,int& count)
+		void VisitBVHTree(BTNode* root, int& count)
 		{
 			if (root != nullptr)
 			{
 				count++;
-					VisitBVHTree((BNode*)root->sub[0], count);
-					VisitBVHTree((BNode*)root->sub[1], count);
+				VisitBVHTree((BTNode*)root->sub[0], count);
+				VisitBVHTree((BTNode*)root->sub[1], count);
 			}
 		}
 
 		/*~BVH()
 		{
-			
+
 		}*/
 
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
 		{
-			if(root)
+			if (root)
 				return root->Hit(r, tMin, tMax, rec);
 			return false;
 		}
@@ -105,7 +105,7 @@ namespace ry
 
 	private:
 
-		BNode* BuildBVH(Hitable** list, int n, float t0, float t1)
+		BTNode* BuildBVH(Hitable** list, int n, float t0, float t1)
 		{
 			int axis = int(3 * RayMath::Drand48());
 			if (axis == 0)
@@ -153,11 +153,11 @@ namespace ry
 						else
 							return 1;
 					});
-			BNode* broot = new BNode();
+			BTNode* broot = new BTNode();
 
 			if (n == 1)
 			{
-				broot->sub[0] = broot->sub[1] = (BNode*)list[0];
+				broot->sub[0] = broot->sub[1] = (BTNode*)list[0];
 			}
 			else if (n == 2)
 			{
@@ -175,12 +175,12 @@ namespace ry
 				std::cerr << "No bounding box in BNode constructor.!\n";
 			}
 
-			broot->box = AABB::Surrounding(boxL, boxR);
+			broot->box = AABB::UnionBox(boxL, boxR);
 
 			return broot;
 		}
 
-		BNode* root;
+		BTNode* root;
 
 	};
 

@@ -1,5 +1,6 @@
 #pragma once
 #include"Hitable.h"
+#include"AABB.h"
 namespace ry
 {
 	class HitList : public Hitable
@@ -24,7 +25,7 @@ namespace ry
 			}
 		}
 
-		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)
+		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
 		{
 			HitRecord recTmp;
 			bool isHited = false;
@@ -39,6 +40,26 @@ namespace ry
 				}
 			}
 			return isHited;
+		}
+
+		virtual bool GetBBox(AABB& box)const
+		{
+			if (size < 1)return false;
+			AABB tmpbox;
+			if (!list[0]->GetBBox(tmpbox))return false;
+			box = tmpbox;
+			for (int i = 1; i < size; i++)
+			{
+				if (list[i]->GetBBox(tmpbox))
+				{
+					box = AABB::UnionBox(box, tmpbox);
+				}
+				else
+				{
+					return false;
+				}
+			}
+			return true;
 		}
 
 		virtual void SetMaterial(Material* mat)

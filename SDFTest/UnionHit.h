@@ -18,7 +18,7 @@ namespace ry
         }
 
         virtual bool Hit(const Ray& r, const float& tMin,
-            const float& tMax, HitRecord& rec)
+            const float& tMax, HitRecord& rec)const
         {
             SdfRecord sdfR;
             auto result = sdf->Hit(r, tMin, tMax, rec, sdfR);

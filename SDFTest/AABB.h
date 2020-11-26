@@ -16,16 +16,23 @@ namespace ry
 
 		AABB() {}
 
+		/// <summary>
+		/// construct an aabb
+		/// </summary>
+		/// <param name="pMin">min position</param>
+		/// <param name="pMax">max position</param>
 		AABB(const sf::Vector2f& pMin, const sf::Vector2f& pMax)
+			:vMin(pMin), vMax(pMax)
 		{
-			vMin = pMin;
-			vMax = pMax;
+			centroid = (vMin + vMax) * 0.5f;
 
 			rect.setFillColor(sf::Color(0, 0, 0, 0));
 			rect.setOutlineColor(sf::Color::White);
 			rect.setOutlineThickness(2);
-			rect.setPosition(pMin);
-			rect.setSize(pMax);
+			rect.setPosition(sf::Vector2f(std::min(pMin.x, pMax.x),
+				std::min(pMin.y, pMax.y)));
+			rect.setSize(sf::Vector2f(abs(pMin.x - pMax.x),
+				abs(pMin.y - pMax.y)));
 		}
 
 		bool Hit(const Ray& r, float tMin, float tMax)const
@@ -50,7 +57,13 @@ namespace ry
 			return true;
 		}
 
-		static AABB Surrounding(const AABB& boxA, const AABB& boxB)
+		/// <summary>
+		/// Get an union-box from two sub boxes
+		/// </summary>
+		/// <param name="boxA">sub box a</param>
+		/// <param name="boxB">sub box b</param>
+		/// <returns>union-box</returns>
+		static AABB UnionBox(const AABB& boxA, const AABB& boxB)
 		{
 			sf::Vector2f pMin(
 				std::fmin(boxA.vMin.x, boxB.vMin.x),
@@ -63,7 +76,12 @@ namespace ry
 			return AABB(pMin, pMax);
 		}
 
-		sf::Vector2f vMin, vMax;
+		sf::Vector2f vMin;
+		sf::Vector2f vMax;
+		/// <summary>
+		/// centroid
+		/// </summary>
+		sf::Vector2f centroid;
 
 		void SetColor(sf::Color cl)
 		{

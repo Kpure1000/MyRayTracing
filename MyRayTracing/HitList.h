@@ -71,7 +71,7 @@ namespace ry
 			{
 				if (list[0]->GetBBox(t0, t1, tmpBox)) 
 				{
-					box = AABB::Surrounding(box, tmpBox);
+					box = AABB::UnionBox(box, tmpBox);
 				}
 				else
 				{

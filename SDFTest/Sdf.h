@@ -34,7 +34,7 @@ namespace sdf
 			return false;
 		}
 
-		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		virtual bool GetBBox(AABB& box)const
 		{
 			return true;
 		}
@@ -127,10 +127,11 @@ namespace sdf
 			return false;
 		}
 
-		virtual bool GetBBox(float t0, float t1, AABB& box)const
+		virtual bool GetBBox(AABB& box)const
 		{
 			box.vMin = center - Vector2f(radius, radius);	
 			box.vMax = center + Vector2f(radius, radius);
+			box.centroid = (box.vMax + box.vMin) * 0.5f;
 			return true;
 		}
 

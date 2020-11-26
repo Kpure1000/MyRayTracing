@@ -22,7 +22,7 @@ namespace ry
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)
+			const float& tMax, HitRecord& rec)const
 		{
 			HitRecord far;
 			if (material != nullptr)
@@ -31,6 +31,11 @@ namespace ry
 			}
 			SdfRecord sdfR;
 			return sdf->Hit(r, tMin, tMax, rec,far, sdfR);
+		}
+
+		virtual bool GetBBox(AABB& box)const
+		{
+			return sdf->GetBBox(box);
 		}
 
 		virtual void SetMaterial(Material* mat)

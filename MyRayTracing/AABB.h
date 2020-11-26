@@ -45,7 +45,7 @@ namespace ry
 			return true;
 		}
 
-		static AABB Surrounding(const AABB& boxA, const AABB& boxB)
+		static AABB UnionBox(const AABB& boxA, const AABB& boxB)
 		{
 			Vector3 pMin(
 				std::fmin(boxA.rect[0][0], boxB.rect[0][0]),
