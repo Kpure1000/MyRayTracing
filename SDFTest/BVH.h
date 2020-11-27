@@ -2,17 +2,27 @@
 #define BVH_H
 #include"Hitable.h"
 #include"AABB.h"
+#include<iomanip>
 #include<memory>
 #include<vector>
 #include<iostream>
+using std::cout;
+using std::setw;
+using std::setfill;
 using std::shared_ptr;
 using std::vector;
 namespace ry
 {
-	class BTNode : public Hitable //, public Drawable
+
+	std::ostream& operator<<(std::ostream& s, const sf::Vector2f& v)
+	{
+		return s << "(" << v.x << ", " << v.y << ")";
+	}
+
+	class BTNode
 	{
 	public:
-		BTNode() :left(nullptr), right(nullptr)
+		BTNode() :obj(nullptr), left(nullptr), right(nullptr)
 		{}
 
 		/// <summary>
@@ -26,31 +36,49 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
 		{
-			//  if intersected the box
-			if (this->box.Hit(r, tMin, tMax))
+			if (box.Hit(r, tMin, tMax))
 			{
-				HitRecord recl, recr;
-				bool isHitl = false, isHitr = false;
-				//  do intersection for sub node
-				if (left)isHitl = left->Hit(r, tMin, tMax, recl);
-				if (right)isHitr = right->Hit(r, tMin, tMax, recr);
-				if (isHitl && isHitr)
+				HitRecord recL, recR;
+				bool isHitL = false, isHitR = false;
+
+				if (left)isHitL = left->Hit(r, tMin, tMax, recL);
+				if (right)isHitR = right->Hit(r, tMin, tMax, recR);
+
+				if (isHitL && isHitR)
 				{
-					rec = recl.t < recr.t ? recl : recr;
-					return true;
+					rec = recL.t < recR.t ? recL : recR;
+					if (rec.t<tMax && rec.t>tMin)
+						return true;
 				}
-				else if (isHitl)
+				else if (isHitL)
 				{
-					rec = recl; 
-					return true;
+					if (recL.t<tMax && recL.t>tMin)
+					{
+						rec = recL;
+						return true;
+					}
 				}
-				else if (isHitr)
+				else if (isHitR)
 				{
-					rec = recr;
-					return true;
+					if (recR.t<tMax && recR.t>tMin)
+					{
+						rec = recR;
+						return true;
+					}
 				}
+				else if (obj != nullptr)
+				{
+					bool isHit = obj->Hit(r, tMin, tMax, rec);
+					if (isHit)
+					{
+						if (rec.t<tMax && rec.t>tMin)
+						{
+							return true;
+						}
+					}
+				}
+				return false;
 			}
-			return false;
 		}
 
 		virtual bool GetBBox(AABB& box)const
@@ -58,9 +86,21 @@ namespace ry
 			box = this->box; return true;
 		}
 
-		AABB box;
+		static void Travle(BTNode* root, int depth)
+		{
+			if (root != nullptr)
+			{
+				if (root->left != nullptr)
+					Travle((BTNode*)root->left, depth + 1);
+				cout << setw(depth * 10) << setfill(' ') << root->box.centroid << "\n";
+				if (root->right != nullptr)
+					Travle((BTNode*)root->right, depth + 1);
+			}
+		}
 
-		Hitable* left, * right;
+		AABB box;
+		Hitable* obj;
+		BTNode* left, * right;
 
 	private:
 
@@ -106,7 +146,8 @@ namespace ry
 		BVH(Hitable** pList, int size) :m_root(nullptr)
 		{
 			m_tree = new Hitable * [size];
-			m_root = BuildTree(pList, 0, (size_t)size - 1);
+			m_root = BuildTree(pList, (size_t)size);
+			BTNode::Travle(m_root, 1);
 		}
 
 		~BVH()
@@ -175,12 +216,11 @@ namespace ry
 			}
 		}
 
-		Hitable* BuildTree(Hitable** list, size_t start, size_t end)
+		BTNode* BuildTree(Hitable** list, size_t size)
 		{
-			//  split
 			float minX = 0, maxX = 0, minY = 0, maxY = 0;
 			AABB tmpBox;
-			for (int i = start; i <= end; i++)
+			for (int i = 0; i < size; i++)
 			{
 				if (!list[i]->GetBBox(tmpBox))return nullptr;
 				minX = tmpBox.centroid.x < minX ? tmpBox.centroid.x : minX;
@@ -188,34 +228,45 @@ namespace ry
 				maxX = tmpBox.centroid.x > maxX ? tmpBox.centroid.x : maxX;
 				maxY = tmpBox.centroid.y > maxY ? tmpBox.centroid.y : maxY;
 			}
-
-			//  split by x or y, determinded by distance of x or y
-			SortList(list + start, end - start + 1, maxX - minX > maxY - minY);
+			SortList(list, size, maxX - minX > maxY - minY);
 
 			BTNode* newRoot = new BTNode();
-			if (end == start)
+			if (size == 1)
 			{
-				newRoot->left = newRoot->right = list[start];
+				newRoot->obj = list[0];
+				AABB b;
+				if (newRoot->obj->GetBBox(b))
+				{
+					newRoot->box = b;
+				}
+				else
+				{
+					std::cerr << "No bounding in self node\n";
+				}
 			}
-			else if (end == start + 1)
+			else if (size == 2)
 			{
-				newRoot->left = list[start];
-				newRoot->right = list[end];
+				newRoot->left = new BTNode;
+				newRoot->right = new BTNode;
+				newRoot->left->obj = list[0];
+				newRoot->right->obj = list[1];
+				AABB bl, br;
+				if (!newRoot->left->obj->GetBBox(bl) || !newRoot->right->obj->GetBBox(br))
+				{
+					std::cerr << "No bounding in sub node\n";
+				}
+				newRoot->left->box = bl;
+				newRoot->right->box = br;
+				newRoot->box = AABB::UnionBox(bl, br);
 			}
 			else
 			{
-				size_t mid = start >> 2 + end >> 2;
-				newRoot->left = BuildTree(list, start, mid);
-				newRoot->right = BuildTree(list, mid, end);
+				size_t mid = size / 2;
+				newRoot->left = BuildTree(list, mid);
+				newRoot->right = BuildTree(list + mid, size - mid);
+				newRoot->box = AABB::UnionBox(newRoot->left->box, newRoot->right->box);
 			}
 
-			AABB bl, br;
-			if (!newRoot->left->GetBBox(bl) || !newRoot->right->GetBBox(br))
-			{
-				std::cerr << "No bounding in sub node\n";
-			}
-
-			newRoot->box = AABB::UnionBox(bl, br);
 			return newRoot;
 		}
 
@@ -224,7 +275,7 @@ namespace ry
 			return nullptr;
 		}
 
-		Hitable* m_root;
+		BTNode* m_root;
 
 		Hitable** m_tree;
 

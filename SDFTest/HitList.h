@@ -7,14 +7,14 @@ namespace ry
 	{
 	public:
 
-		HitList() : list(NULL),size(0) {}
+		HitList() : list(NULL), maxSize(0), curSize(0) {}
 
-		HitList(int listSize) : size(listSize)
+		HitList(int listSize) : maxSize(listSize), curSize(0)
 		{
-			list = (Hitable**)malloc(sizeof(Hitable*) * size);
+			list = (Hitable**)malloc(sizeof(Hitable*) * maxSize);
 		}
 
-		HitList(Hitable** List, int listSize) :list(List), size(listSize)
+		HitList(Hitable** List, int listSize) :list(List), maxSize(listSize)
 		{}
 
 		~HitList()
@@ -25,12 +25,21 @@ namespace ry
 			}
 		}
 
+		void AddHitable(Hitable* hit)
+		{
+			if (curSize <= maxSize)
+			{
+				curSize++;
+				list[curSize - 1] = hit;
+			}
+		}
+
 		virtual bool Hit(const Ray& r, const float& tMin, const float& tMax, HitRecord& rec)const
 		{
 			HitRecord recTmp;
 			bool isHited = false;
 			float closet_so_far = tMax;
-			for (size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < curSize; i++)
 			{
 				if (list[i]->Hit(r, tMin, closet_so_far, recTmp))
 				{
@@ -44,11 +53,11 @@ namespace ry
 
 		virtual bool GetBBox(AABB& box)const
 		{
-			if (size < 1)return false;
+			if (curSize < 1)return false;
 			AABB tmpbox;
 			if (!list[0]->GetBBox(tmpbox))return false;
 			box = tmpbox;
-			for (int i = 1; i < size; i++)
+			for (int i = 1; i < curSize; i++)
 			{
 				if (list[i]->GetBBox(tmpbox))
 				{
@@ -68,13 +77,14 @@ namespace ry
 		}
 
 		Hitable** list;
-		int size;
+		int maxSize;
+		int curSize;
 
 	private:
 
 		virtual void draw(RenderTarget& target, RenderStates states)const
 		{
-			for (size_t i = 0; i < size; i++)
+			for (size_t i = 0; i < maxSize; i++)
 			{
 				target.draw(*list[i], states);
 			}

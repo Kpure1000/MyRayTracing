@@ -24,13 +24,13 @@ namespace ry
 		virtual bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)const
 		{
-			HitRecord far;
+			//HitRecord far;
 			if (material != nullptr)
 			{
 				rec.mat = material;
 			}
 			SdfRecord sdfR;
-			return sdf->Hit(r, tMin, tMax, rec,far, sdfR);
+			return sdf->Hit(r, tMin, tMax, rec, sdfR);
 		}
 
 		virtual bool GetBBox(AABB& box)const

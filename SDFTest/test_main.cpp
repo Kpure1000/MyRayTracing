@@ -19,7 +19,7 @@ using namespace std;
 
 int main()
 {
-	unsigned int width = 1024, height = 768;
+	unsigned int width = 1920, height = 1080;
 
 	std::cout << "SDF test in ray tracing, 2D, with SFML.\nstart.\n\n";
 
@@ -27,28 +27,46 @@ int main()
 		sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 
 #pragma region worldInit
-	HitList* world = new HitList(5);
+	int maxSize = 40;
+	HitList* world = new HitList(maxSize);
 
-	world->list[0] = new Sphere(new SdfSphere({ 600,200 }, 60), new Metal());
-	world->list[1] = new Sphere(new SdfSphere({ 330,420 }, 50), new Simple());
-	world->list[2] = new Sphere(new SdfSphere({ 630,520 }, 90), new Dielectric(1.1f));
-	world->list[3] = new Sphere(new SdfSphere({ 430,420 }, 40), new Dielectric(1.3f));
-	world->list[4] = new Sphere(new SdfSphere({ 730,620 }, 70), new Metal());
-	
+	for (size_t i = 0; i < maxSize; i++)
+	{
+		int r = rand() % 10;
+		if (r < 6)
+		{
+			world->AddHitable(new Sphere(new SdfSphere(
+				{ 1920.0f - rand() % 1920,1080.0f - rand() % 1080 }, 10.0f - rand() % 7
+			), new Dielectric(1.5f)));
+		}
+		else if (r < 8)
+		{
+			world->AddHitable(new Sphere(new SdfSphere(
+				{ 1920.0f - rand() % 1920 ,1080.0f - rand() % 1080 }, 10.0f - rand() % 7
+			), new Metal()));
+		}
+		else
+		{
+			world->AddHitable(new Sphere(new SdfSphere(
+				{ 1920.0f - rand() % 1920,1080.0f - rand() % 1080 }, 10.0f - rand() % 7
+			), new Metal()));
+		}
+	}
+
 	/*world->list[0] = new DifferenceHit (new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Dielectric(1.3f)),
 		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));*/
 
-	/*world->list[0] = new UnionHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Metal()),
-		new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));*/
+		/*world->list[0] = new UnionHit(new Sphere(new SdfSphere({ 400.0f,400.0f }, 230), new Metal()),
+			new Sphere(new SdfSphere({ 500.0f,500.0f }, 230), new Dielectric(1.5f)), new Dielectric(1.9f));*/
 
 
-	//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
+			//world->list[1] = new InterHit(SdfSphere({ 420,420 }, 200), new Dielectric(1.3));
 #pragma endregion
 
-	BVH bvh(world->list, world->size);
+	BVH bvh(world->list, world->curSize);
 
-	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 20);
-	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, &bvh, 20);
+	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 2000);
+	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, &bvh, 2000);
 
 
 	while (App.isOpen())
@@ -62,12 +80,12 @@ int main()
 			}
 		}
 
-		rayLauncher.Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
+		//rayLauncher.Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
 
-		//rayLauncher.BVH_Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
+		rayLauncher.BVH_Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
 
 		App.clear(sf::Color(40, 40, 40, 255));
-		
+
 		//render
 		App.draw(*world);
 
