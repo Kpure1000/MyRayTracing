@@ -80,5 +80,8 @@
     <ClInclude Include="RayMath.h">
       <Filter>头文件\util</Filter>
     </ClInclude>
+    <ClInclude Include="TestBVH.h">
+      <Filter>头文件\BVH</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

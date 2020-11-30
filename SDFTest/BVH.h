@@ -171,14 +171,12 @@ namespace ry
 			return false;
 		}
 
-	private:
-
 		/// <summary>
 		/// Sort the list by centroid.x and then centroid.y
 		/// </summary>
 		/// <param name="list">list</param>
 		/// <param name="size">size of list</param>
-		void SortList(Hitable** list, size_t size, bool byX)
+		static void SortList(Hitable** list, size_t size, bool byX)
 		{
 			if (byX)
 			{
@@ -215,6 +213,8 @@ namespace ry
 					});
 			}
 		}
+
+	private:
 
 		BTNode* BuildTree(Hitable** list, size_t size)
 		{

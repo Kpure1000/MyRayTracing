@@ -162,6 +162,7 @@
     <ClInclude Include="RayMath.h" />
     <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="TestBVH.h" />
     <ClInclude Include="UnionHit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
