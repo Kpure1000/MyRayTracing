@@ -79,6 +79,7 @@ namespace ry
 				}
 				return false;
 			}
+			return false;
 		}
 
 		virtual bool GetBBox(AABB& box)const
@@ -106,28 +107,9 @@ namespace ry
 
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
-			//target.draw(box, states);
 		}
 
 	};
-
-	/// <summary>
-	/// BVH node in a array
-	/// </summary>
-	/*class BNode : public Hitable
-	{
-	public:
-		BNode()
-		{
-
-		}
-
-		//  offset left
-		int left;
-		//  offset right
-		int right;
-
-	};*/
 
 	/// <summary>
 	/// Bounding Volume Hierarchy
@@ -279,19 +261,8 @@ namespace ry
 
 		Hitable** m_tree;
 
-		/*struct Primitive
-		{
-			Primitive(const int& Index, AABB Box)
-				:index(Index), bounds(Box) {}
-			AABB bounds;
-			int index;
-		};
-
-		vector<Primitive> buildData;*/
-
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
-			//target.draw((*m_root), states);
 		}
 
 	};
