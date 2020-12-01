@@ -16,10 +16,11 @@ using namespace std;
 #define KeyPressing sf::Event::KeyPressed
 #define KeyReleasing sf::Event::KeyReleased
 #define KeyEvent(EV) (sf::Keyboard::isKeyPressed(EV))
+void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int maxSize);
 
 int main()
 {
-	Srand48((unsigned int)time(NULL));
+	Srand48(5);
 	unsigned int width = 800, height = 600;
 
 	std::cout << "SDF test in ray tracing, 2D, with SFML.\nstart.\n\n";
@@ -27,47 +28,22 @@ int main()
 	sf::RenderWindow App(sf::VideoMode(width, height), "RayTracingTest",
 		sf::Style::Close | sf::Style::Titlebar | sf::Style::Resize);
 
-	sf::View camera(sf::FloatRect(0, 0, 800.0f, 600.0f));
+	sf::View camera(sf::FloatRect(0, 0, width, height));
 
 	camera.setViewport(sf::FloatRect(0, 0, 1.0f, 1.0f));
 
 #pragma region worldInit
-	int maxSize = 60;
+	int maxSize = 40;
 	HitList* world = new HitList(maxSize);
 
-	for (size_t i = 0; i < maxSize; i++)
-	{
-		int r = rand() % 10;
-		if (r < 6)
-		{
-			world->AddHitable(new Sphere(new SdfSphere(
-				{ (float)width - rand() % width,(float)height - rand() % height }, 10.0f - rand() % 7
-			), new Dielectric(1.5f)));
-		}
-		else if (r < 8)
-		{
-			world->AddHitable(new Sphere(new SdfSphere(
-				{ (float)width - rand() % width ,(float)height - rand() % height }, 10.0f - rand() % 7
-			), new Metal()));
-		}
-		else
-		{
-			world->AddHitable(new Sphere(new SdfSphere(
-				{ (float)width - rand() % width,(float)height - rand() % height }, 10.0f - rand() % 7
-			), new Metal()));
-		}
-	}
+	RandomWorld(world, sf::Vector2f(width * 0.0, height * 0.0), width * 1.0, height * 1.0, maxSize);
 
 #pragma endregion
 
-	BVH bvh(world->list, world->curSize);
-
-	//TestBVH testBvh(world->list, world->curSize);
+	shared_ptr<BVH> bvh = make_shared<BVH>(BVH(world->list, world->curSize));
 
 	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 2000);
-	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, &bvh, 2000);
-	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, &testBvh, 2000);
-
+	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvh.get(), 2000);
 
 	while (App.isOpen())
 	{
@@ -87,11 +63,7 @@ int main()
 			}
 		}
 
-		//rayLauncher.Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
-
-		rayLauncher.BVH_Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
-
-		//rayLauncher.TestBVH_Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
+		rayLauncher.Update((Vector2f)Mouse::getPosition(App), Mouse::isButtonPressed(Mouse::Button::Left));
 
 		App.setView(camera);
 
@@ -100,9 +72,35 @@ int main()
 		//render
 		App.draw(*world);
 
+		if(bvh)
+			App.draw(*bvh);
+
 		App.draw(rayLauncher);
 
 		App.display();
 	}
+
+	delete world;
 	return 0;
+}
+
+void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int maxSize)
+{
+	for (size_t i = 0; i < maxSize; i++)
+	{
+		int r = rand() % 10;
+		if (r < 5)
+		{
+			world->AddHitable(new Sphere(new SdfSphere(
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 20.0f - rand() % 10
+			), new Dielectric(1.5f)));
+		}
+		else
+		{
+			world->AddHitable(new Sphere(new SdfSphere(
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 20.0f - rand() % 10
+			), new Metal()));
+		}
+	}
+
 }

@@ -129,9 +129,9 @@ namespace sdf
 
 		virtual bool GetBBox(AABB& box)const
 		{
-			box.vMin = center - Vector2f(radius, radius);	
-			box.vMax = center + Vector2f(radius, radius);
-			box.centroid = (box.vMax + box.vMin) * 0.5f;
+			sf::Vector2f vMin = center - Vector2f(radius, radius);
+			sf::Vector2f vMax = center + Vector2f(radius, radius);
+			box.SetBox(vMin, vMax);
 			return true;
 		}
 

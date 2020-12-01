@@ -6,6 +6,7 @@
 #include<memory>
 #include<vector>
 #include<iostream>
+#include<functional>
 using std::cout;
 using std::setw;
 using std::setfill;
@@ -19,7 +20,7 @@ namespace ry
 		return s << "(" << v.x << ", " << v.y << ")";
 	}
 
-	class BTNode
+	class BTNode : public Drawable
 	{
 	public:
 		BTNode() :obj(nullptr), left(nullptr), right(nullptr)
@@ -87,15 +88,15 @@ namespace ry
 			box = this->box; return true;
 		}
 
-		static void Travle(BTNode* root, int depth)
+		static void Travle(BTNode* node, int depth, std::function<void(const int&, BTNode*)>const Visit)
 		{
-			if (root != nullptr)
+			if (node != nullptr)
 			{
-				if (root->left != nullptr)
-					Travle((BTNode*)root->left, depth + 1);
-				cout << setw(depth * 10) << setfill(' ') << root->box.centroid << "\n";
-				if (root->right != nullptr)
-					Travle((BTNode*)root->right, depth + 1);
+				if (node->left != nullptr)
+					Travle((BTNode*)node->left, depth + 1, Visit);
+				Visit(depth, node);
+				if (node->right != nullptr)
+					Travle((BTNode*)node->right, depth + 1, Visit);
 			}
 		}
 
@@ -107,6 +108,7 @@ namespace ry
 
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
+			target.draw(box, states);
 		}
 
 	};
@@ -129,7 +131,10 @@ namespace ry
 		{
 			m_tree = new Hitable * [size];
 			m_root = BuildTree(pList, (size_t)size);
-			BTNode::Travle(m_root, 1);
+			/*BTNode::Travle(m_root, 1, [](const int& depth, BTNode* node)
+				{
+					cout << setw(6 * depth) << setfill(' ') << node->box.GetMax() - node->box.GetMin() << "\n";
+				});*/
 		}
 
 		~BVH()
@@ -153,49 +158,6 @@ namespace ry
 			return false;
 		}
 
-		/// <summary>
-		/// Sort the list by centroid.x and then centroid.y
-		/// </summary>
-		/// <param name="list">list</param>
-		/// <param name="size">size of list</param>
-		static void SortList(Hitable** list, size_t size, bool byX)
-		{
-			if (byX)
-			{
-				//  sort by centroid.x
-				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
-					{
-						AABB xbox, ybox;
-						Hitable* hx = *(Hitable**)x;
-						Hitable* hy = *(Hitable**)y;
-						if (!hx->GetBBox(xbox) || !hy->GetBBox(ybox))
-						{
-							std::cerr << "No bounding in bnode\n";
-						}
-						if (xbox.centroid.x - ybox.centroid.x < 0.0f)
-							return -1;
-						return 1;
-					});
-			}
-			else
-			{
-				//  sort by centroid.y
-				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
-					{
-						AABB xbox, ybox;
-						Hitable* hx = *(Hitable**)x;
-						Hitable* hy = *(Hitable**)y;
-						if (!hx->GetBBox(xbox) || !hy->GetBBox(ybox))
-						{
-							std::cerr << "No bounding in bnode\n";
-						}
-						if (xbox.centroid.y - ybox.centroid.y < 0.0f)
-							return -1;
-						return 1;
-					});
-			}
-		}
-
 	private:
 
 		BTNode* BuildTree(Hitable** list, size_t size)
@@ -205,10 +167,10 @@ namespace ry
 			for (int i = 0; i < size; i++)
 			{
 				if (!list[i]->GetBBox(tmpBox))return nullptr;
-				minX = tmpBox.centroid.x < minX ? tmpBox.centroid.x : minX;
-				minY = tmpBox.centroid.y < minY ? tmpBox.centroid.y : minY;
-				maxX = tmpBox.centroid.x > maxX ? tmpBox.centroid.x : maxX;
-				maxY = tmpBox.centroid.y > maxY ? tmpBox.centroid.y : maxY;
+				minX = tmpBox.GetCentroid().x < minX ? tmpBox.GetCentroid().x : minX;
+				minY = tmpBox.GetCentroid().y < minY ? tmpBox.GetCentroid().y : minY;
+				maxX = tmpBox.GetCentroid().x > maxX ? tmpBox.GetCentroid().x : maxX;
+				maxY = tmpBox.GetCentroid().y > maxY ? tmpBox.GetCentroid().y : maxY;
 			}
 			SortList(list, size, maxX - minX > maxY - minY);
 
@@ -220,6 +182,7 @@ namespace ry
 				if (newRoot->obj->GetBBox(b))
 				{
 					newRoot->box = b;
+					newRoot->box.SetColor(sf::Color(255, 0, 0, 100));
 				}
 				else
 				{
@@ -238,7 +201,9 @@ namespace ry
 					std::cerr << "No bounding in sub node\n";
 				}
 				newRoot->left->box = bl;
+				newRoot->left->box.SetColor(sf::Color(255, 0, 0, 100));
 				newRoot->right->box = br;
+				newRoot->right->box.SetColor(sf::Color(255, 0, 0, 100));
 				newRoot->box = AABB::UnionBox(bl, br);
 			}
 			else
@@ -263,6 +228,53 @@ namespace ry
 
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
+			BTNode::Travle(m_root, 0, [&](const int& depth, BTNode* node)
+				{
+					target.draw(*node, states);
+				});
+		}
+
+		/// <summary>
+		/// Sort the list by centroid.x and then centroid.y
+		/// </summary>
+		/// <param name="list">list</param>
+		/// <param name="size">size of list</param>
+		static void SortList(Hitable** list, size_t size, bool byX)
+		{
+			if (byX)
+			{
+				//  sort by centroid.x
+				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
+					{
+						AABB xbox, ybox;
+						Hitable* hx = *(Hitable**)x;
+						Hitable* hy = *(Hitable**)y;
+						if (!hx->GetBBox(xbox) || !hy->GetBBox(ybox))
+						{
+							std::cerr << "No bounding in bnode\n";
+						}
+						if (xbox.GetCentroid().x - ybox.GetCentroid().x < 0.0f)
+							return -1;
+						return 1;
+					});
+			}
+			else
+			{
+				//  sort by centroid.y
+				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
+					{
+						AABB xbox, ybox;
+						Hitable* hx = *(Hitable**)x;
+						Hitable* hy = *(Hitable**)y;
+						if (!hx->GetBBox(xbox) || !hy->GetBBox(ybox))
+						{
+							std::cerr << "No bounding in bnode\n";
+						}
+						if (xbox.GetCentroid().y - ybox.GetCentroid().y < 0.0f)
+							return -1;
+						return 1;
+					});
+			}
 		}
 
 	};

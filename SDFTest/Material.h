@@ -16,23 +16,11 @@ namespace ry
 		Color color;
 	};
 
-	//直接穿过去的材质
-	class Simple : public Material
-	{
-	public:
-		Simple() :Material(Color::White) {}
-		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Ray& scattered)const
-		{
-			scattered = Ray(rec.hitPoint, rayIn.direction);
-			return true;
-		}
-	};
-
 	//反射
 	class Metal : public Material
 	{
 	public:
-		Metal() :Material(Color::Blue) {}
+		Metal() :Material(Color::Blue + Color::Green) {}
 		virtual bool Scatter(const Ray& rayIn, const HitRecord& rec, Ray& scattered)const
 		{
 			Vector2f reflected = Reflect(rayIn.Direction(), rec.normal);
@@ -46,7 +34,7 @@ namespace ry
 	{
 	public:
 		Dielectric(const float& Refractive_Indices) 
-			: refractive_Indices(Refractive_Indices),Material(Color::Green) {}
+			: refractive_Indices(Refractive_Indices),Material(Color::Red+Color::Blue) {}
 
 		/*
 		* 折射

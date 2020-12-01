@@ -14,7 +14,8 @@ namespace ry
 	{
 	public:
 
-		AABB() {}
+		AABB()
+		{}
 
 		/// <summary>
 		/// construct an aabb
@@ -27,8 +28,8 @@ namespace ry
 			centroid = (vMin + vMax) * 0.5f;
 
 			rect.setFillColor(sf::Color(0, 0, 0, 0));
-			rect.setOutlineColor(sf::Color::White);
-			rect.setOutlineThickness(2);
+			rect.setOutlineColor(sf::Color(255, 255, 255, 75));
+			rect.setOutlineThickness(1);
 			rect.setPosition(sf::Vector2f(std::min(pMin.x, pMax.x),
 				std::min(pMin.y, pMax.y)));
 			rect.setSize(sf::Vector2f(abs(pMin.x - pMax.x),
@@ -76,12 +77,24 @@ namespace ry
 			return AABB(pMin, pMax);
 		}
 
-		sf::Vector2f vMin;
-		sf::Vector2f vMax;
-		/// <summary>
-		/// centroid
-		/// </summary>
-		sf::Vector2f centroid;
+		void SetBox(sf::Vector2f const& pMin, sf::Vector2f const& pMax)
+		{
+			vMin = pMin;
+			vMax = pMax;
+			centroid = (vMin + vMax) * 0.5f;
+
+			rect.setFillColor(sf::Color(0, 0, 0, 0));
+			rect.setOutlineColor(sf::Color(255, 255, 255, 125));
+			rect.setOutlineThickness(2);
+			rect.setPosition(sf::Vector2f(std::min(vMin.x, vMax.x),
+				std::min(vMin.y, vMax.y)));
+			rect.setSize(sf::Vector2f(abs(vMin.x - vMax.x),
+				abs(vMin.y - vMax.y)));
+		}
+
+		sf::Vector2f GetMin() { return vMin; }
+		sf::Vector2f GetMax() { return vMax; }
+		sf::Vector2f GetCentroid() { return centroid; }
 
 		void SetColor(sf::Color cl)
 		{
@@ -89,6 +102,13 @@ namespace ry
 		}
 
 	private:
+
+		sf::Vector2f vMin;
+		sf::Vector2f vMax;
+		/// <summary>
+		/// centroid
+		/// </summary>
+		sf::Vector2f centroid;
 
 		sf::RectangleShape rect;
 
