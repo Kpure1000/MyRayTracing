@@ -21,8 +21,8 @@ void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int
 
 int main()
 {
-	Srand48(5);
-	unsigned int width = 800, height = 600;
+	Srand48((unsigned int)time(NULL));
+	unsigned int width = 1920, height = 1080;
 
 	std::cout << "SDF test in ray tracing, 2D, with SFML.\nstart.\n\n";
 
@@ -34,21 +34,22 @@ int main()
 	camera.setViewport(sf::FloatRect(0, 0, 1.0f, 1.0f));
 
 #pragma region worldInit
-	int maxSize = 50;
+	int maxSize = 30;
 	HitList* world = new HitList(maxSize);
 
 	RandomWorld(world, sf::Vector2f(width * 0.0, height * 0.0), width * 1.0, height * 1.0, maxSize);
 
 #pragma endregion
 
-	//shared_ptr<BVH> bvh = make_shared<BVH>(BVH(world->list, world->curSize));
+	BVH* bvh = nullptr;
+	bvh = new BVH(world->list, world->curSize);
 
-	shared_ptr<BVHTree> bvhTree =
-		make_shared<BVHTree>(BVHTree(world->list, world->curSize));
+	BVHTree* bvhTree = nullptr;
+	bvhTree = new BVHTree(world->list, world->curSize);
 
-	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 2000);
-	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvh.get(), 2000);
-	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvhTree.get(), 2000);
+	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 4000);
+	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvh, 4000);
+	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvhTree, 4000);
 
 	while (App.isOpen())
 	{
@@ -64,7 +65,6 @@ int main()
 				float wScale = camera.getSize().x / (float)App.getSize().x;
 				float hScale = camera.getSize().y / (float)App.getSize().y;
 				camera.setViewport(sf::FloatRect(0, 0, wScale, hScale));
-
 			}
 		}
 
@@ -77,11 +77,11 @@ int main()
 		//render
 		App.draw(*world);
 
-		/*if (bvh)
-			App.draw(*bvh);*/
+		if (bvh)
+			App.draw(*bvh);
 
-		/*if (bvhTree)
-			App.draw(*bvhTree);*/
+		if (bvhTree)
+			App.draw(*bvhTree);
 
 		App.draw(rayLauncher);
 
@@ -100,13 +100,13 @@ void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int
 		if (r < 5)
 		{
 			world->AddHitable(new Sphere(new SdfSphere(
-				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 20.0f - rand() % 10
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 10.0f - rand() % 8
 			), new Dielectric(1.5f)));
 		}
 		else
 		{
 			world->AddHitable(new Sphere(new SdfSphere(
-				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 20.0f - rand() % 10
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 10.0f - rand() % 8
 			), new Metal()));
 		}
 	}

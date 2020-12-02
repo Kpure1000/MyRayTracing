@@ -112,6 +112,8 @@ namespace ry
 
 		sf::RectangleShape rect;
 
+		int fff[2];
+
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
 			target.draw(rect, states);

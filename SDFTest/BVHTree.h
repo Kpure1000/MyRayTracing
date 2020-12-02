@@ -42,61 +42,44 @@ namespace ry
 			const float& tMax, HitRecord& rec)
 		{
 			HitRecord tmpRec = rec;
+			rec.t = tMax + 1.0f;
 			int index = 0;
 			todo.clear();
 			todo.push(index);
-			LBNode* tmpNode;
-			int right;
-			int left;
-
-			int hitCount = 0;
 
 			float closet_tmax = tMax;
-				
+			
+			LBNode* tmpNode;
+
+			bool isHited = false;
+
 			while (!todo.isEmpty())
 			{
 				index = todo.top();
-				tmpNode = &m_ltree[index];
 				todo.pop();
-
-				right = tmpNode->right;
-				left = tmpNode->left;
-
-				//  if box hited
-				if (tmpNode->box.Hit(r, tMin, closet_tmax))
+				tmpNode = &m_ltree[index];
+				if (tmpNode->box.Hit(r, tMin, tMax))
 				{
-					// if node is a leaf
-					if (right == -1 && left == -1)
-					{
-						if (tmpNode->obj)
-						{
-							if (tmpNode->obj->Hit(r, tMin, closet_tmax, tmpRec))
-							{
-								if (tmpRec.t < closet_tmax && tmpRec.t>tMin)
-								{
-									rec = tmpRec;
-									closet_tmax = rec.t;
-									return true;
-								}
-							}
-						}
-						else
-						{
-							std::cerr << "Leaf node Hitable is null\n";
-						}
-						return false;
-					}
-					if (right != -1)
-					{
-						todo.push(tmpNode->right);
-					}
-					if (left != -1)
+					if (tmpNode->left != -1)
 					{
 						todo.push(tmpNode->left);
 					}
+					if (tmpNode->right != -1)
+					{
+						todo.push(tmpNode->right);
+					}
+					else if (tmpNode->left == -1 && tmpNode->right == -1)//Ò¶½Úµã
+					{
+						if (tmpNode->obj->Hit(r, tMin, tMax, tmpRec))
+						{
+							rec = tmpRec.t < rec.t ? tmpRec : rec;
+							isHited = true;
+							
+						}
+					}
 				}
 			}
-			return false;
+			return isHited;
 		}
 
 	private:
@@ -114,6 +97,7 @@ namespace ry
 				maxY = tmpBox.GetCentroid().y > maxY ? tmpBox.GetCentroid().y : maxY;
 			}
 			SortList(list, size, maxX - minX > maxY - minY);
+			//SortList(list, size, rand() % 100 >= 50);
 
 			BNode* newRoot = new BNode();
 			if (size == 1)
@@ -187,6 +171,7 @@ namespace ry
 			{
 				if (!in_todo.isEmpty())
 					index = in_todo.top();
+				tmpNode = &m_ltree[index];
 				in_todo.pop();
 
 				//  draw
@@ -251,6 +236,15 @@ namespace ry
 		BNode* m_root;
 
 		vector<LBNode> m_ltree;
+
+		struct TodoRecord
+		{
+			TodoRecord() {}
+			TodoRecord(const int& Index) :index(Index) {}
+			int index = -1;
+			bool isHited = false;
+			HitRecord rec;
+		};
 
 		Stack<int> todo;
 

@@ -78,7 +78,6 @@ namespace ry
 						}
 					}
 				}
-				return false;
 			}
 			return false;
 		}
@@ -131,7 +130,9 @@ namespace ry
 		{
 			m_tree = new Hitable * [size];
 			m_root = BuildTree(pList, (size_t)size);
-			
+			/*BTNode::Travle(m_root, 0, [](const int& depth, BTNode* node) {
+				cout << setw(depth * 5) << setfill(' ') << node->box.GetMin() << "\n";
+				});*/
 		}
 
 		~BVH()
