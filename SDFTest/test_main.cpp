@@ -8,6 +8,7 @@
 #include"UnionHit.h"
 #include"DifferenceHit.h"
 #include"BVH.h"
+#include"BVHTree.h"
 using namespace ry;
 using namespace sdf;
 using namespace std;
@@ -33,17 +34,21 @@ int main()
 	camera.setViewport(sf::FloatRect(0, 0, 1.0f, 1.0f));
 
 #pragma region worldInit
-	int maxSize = 40;
+	int maxSize = 50;
 	HitList* world = new HitList(maxSize);
 
 	RandomWorld(world, sf::Vector2f(width * 0.0, height * 0.0), width * 1.0, height * 1.0, maxSize);
 
 #pragma endregion
 
-	shared_ptr<BVH> bvh = make_shared<BVH>(BVH(world->list, world->curSize));
+	//shared_ptr<BVH> bvh = make_shared<BVH>(BVH(world->list, world->curSize));
+
+	shared_ptr<BVHTree> bvhTree =
+		make_shared<BVHTree>(BVHTree(world->list, world->curSize));
 
 	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, world, 2000);
-	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvh.get(), 2000);
+	//RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvh.get(), 2000);
+	RayLauncher rayLauncher({ 300,10 }, { 10,100 }, bvhTree.get(), 2000);
 
 	while (App.isOpen())
 	{
@@ -72,8 +77,11 @@ int main()
 		//render
 		App.draw(*world);
 
-		if(bvh)
-			App.draw(*bvh);
+		/*if (bvh)
+			App.draw(*bvh);*/
+
+		/*if (bvhTree)
+			App.draw(*bvhTree);*/
 
 		App.draw(rayLauncher);
 

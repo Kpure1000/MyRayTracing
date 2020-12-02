@@ -3,6 +3,7 @@
 #include"Material.h"
 #include"HitList.h"
 #include"BVH.h"
+#include"BVHTree.h"
 #include<vector>
 using namespace std;
 using namespace sf;
@@ -46,6 +47,25 @@ namespace ry
 			}
 		}
 
+		RayLauncher(Vector2f Origin, Vector2f initDir, BVHTree* World, int MaxDepth)
+			: ray(Origin, initDir), bvhTree(World), maxDepth(MaxDepth),
+			points(new CircleShape[MaxDepth]),
+			verts(new Vertex[MaxDepth + 1]), hitType(HitType::BVHTREE)
+		{
+			for (size_t i = 0; i < MaxDepth; i++)
+			{
+				points[i].setRadius(4);
+				points[i].setFillColor(Color::Red);
+				points[i].setOrigin(4, 4);
+			}
+			verts[0].position = Origin;
+			verts[1].position = initDir * 100.0f + Origin;
+			for (size_t i = 0; i < MaxDepth + 1; i++)
+			{
+				verts[i].color = vertsColor;
+			}
+		}
+
 		Vector2f origin;
 
 		void Update(const Vector2f& mousePosition, const bool& isPress)
@@ -73,6 +93,10 @@ namespace ry
 				else if (hitType == HitType::BVH)
 				{
 					if (!BVH_RayTracer(newRay, rec))break;
+				}
+				else if (hitType == HitType::BVHTREE)
+				{
+					if (!BVHTree_RayTracer(newRay, rec))break;
 				}
 				hitRecs.push_back(rec);
 				points[curDepth].setPosition(rec);
@@ -108,6 +132,8 @@ namespace ry
 
 		BVH* bvh;
 
+		BVHTree* bvhTree;
+
 		int maxDepth;
 
 		int curDepth;
@@ -119,7 +145,8 @@ namespace ry
 		enum class HitType
 		{
 			LIST,
-			BVH
+			BVH,
+			BVHTREE
 		};
 
 		HitType hitType;
@@ -146,6 +173,25 @@ namespace ry
 		{
 			HitRecord rec;
 			if (bvh->Hit(ray, 0.001f, MAX_FLOAT, rec))
+			{
+				//std::cout << "Åö×²-";
+
+				Ray scattered;
+				if (curDepth < maxDepth && rec.mat->Scatter(ray, rec, scattered))
+				{
+					//std::cout << "Çó½»  ";
+					result = rec.hitPoint;
+					ray = scattered;
+					return true;
+				}
+			}
+			return false;
+		}
+
+		bool BVHTree_RayTracer(Ray& ray, Vector2f& result)
+		{
+			HitRecord rec;
+			if (bvhTree->Hit(ray, 0.001f, MAX_FLOAT, rec))
 			{
 				//std::cout << "Åö×²-";
 

@@ -1,123 +1,21 @@
-#ifndef BVH_H
-#define BVH_H
-#include"Hitable.h"
-#include"AABB.h"
-#include<iomanip>
-#include<memory>
-#include<vector>
+#ifndef BVHTREE_H
+#define BVHTREE_H
+
 #include<iostream>
-#include<functional>
-using std::cout;
-using std::setw;
-using std::setfill;
-using std::shared_ptr;
+#include<vector>
+
+#include"Hitable.h"
+#include"BNode.h"
+#include"Stack.h"
+
+using std::cerr;
 using std::vector;
+
 namespace ry
 {
-
-	std::ostream& operator<<(std::ostream& s, const sf::Vector2f& v)
-	{
-		return s << "(" << v.x << ", " << v.y << ")";
-	}
-
-	class BTNode : public Drawable
+	class BVHTree : public Drawable
 	{
 	public:
-		BTNode() :obj(nullptr), left(nullptr), right(nullptr)
-		{}
-
-		/// <summary>
-		/// Calculate the intersection of node'box
-		/// </summary>
-		/// <paramo name="r">ray</param>
-		/// <param name="tMin">min</param>
-		/// <param name="tMax">max</param>
-		/// <param name="rec">record</param>
-		/// <returns>hit or not</returns>
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
-		{
-			if (box.Hit(r, tMin, tMax))
-			{
-				HitRecord recL, recR;
-				bool isHitL = false, isHitR = false;
-
-				if (left)isHitL = left->Hit(r, tMin, tMax, recL);
-				if (right)isHitR = right->Hit(r, tMin, tMax, recR);
-
-				if (isHitL && isHitR)
-				{
-					rec = recL.t < recR.t ? recL : recR;
-					if (rec.t<tMax && rec.t>tMin)
-						return true;
-				}
-				else if (isHitL)
-				{
-					if (recL.t<tMax && recL.t>tMin)
-					{
-						rec = recL;
-						return true;
-					}
-				}
-				else if (isHitR)
-				{
-					if (recR.t<tMax && recR.t>tMin)
-					{
-						rec = recR;
-						return true;
-					}
-				}
-				else if (obj != nullptr)
-				{
-					bool isHit = obj->Hit(r, tMin, tMax, rec);
-					if (isHit)
-					{
-						if (rec.t<tMax && rec.t>tMin)
-						{
-							return true;
-						}
-					}
-				}
-				return false;
-			}
-			return false;
-		}
-
-		virtual bool GetBBox(AABB& box)const
-		{
-			box = this->box; return true;
-		}
-
-		static void Travle(BTNode* node, int depth, std::function<void(const int&, BTNode*)>const Visit)
-		{
-			if (node != nullptr)
-			{
-				if (node->left != nullptr)
-					Travle((BTNode*)node->left, depth + 1, Visit);
-				Visit(depth, node);
-				if (node->right != nullptr)
-					Travle((BTNode*)node->right, depth + 1, Visit);
-			}
-		}
-
-		AABB box;
-		Hitable* obj;
-		BTNode* left, * right;
-
-	private:
-
-		virtual void draw(RenderTarget& target, RenderStates states) const
-		{
-			target.draw(box, states);
-		}
-
-	};
-
-	/// <summary>
-	/// Bounding Volume Hierarchy
-	/// </summary>
-	class BVH : public Hitable
-	{
 	public:
 
 		/// <summary>
@@ -127,37 +25,83 @@ namespace ry
 		/// </summary>
 		/// <param name="list">primitive list</param>
 		/// <param name="size">size of the list</param>
-		BVH(Hitable** pList, int size) :m_root(nullptr)
+		BVHTree(Hitable** pList, int size) :m_root(nullptr)
 		{
-			m_tree = new Hitable * [size];
 			m_root = BuildTree(pList, (size_t)size);
-			
+			//  TODO make linear tree
+			BuildLinearTree(m_root);
+			int tmpSize = m_ltree.size();
+			todo.SetSize(tmpSize);
 		}
 
-		~BVH()
+		~BVHTree()
 		{
-			if (m_tree)delete[] m_tree;
 		}
 
 		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
+			const float& tMax, HitRecord& rec)
 		{
-			//  TODO: use m_tree to travel
-			if (m_root)
-				return m_root->Hit(r, tMin, tMax, rec);
-			return false;
-		}
+			HitRecord tmpRec = rec;
+			int index = 0;
+			todo.clear();
+			todo.push(index);
+			LBNode* tmpNode;
+			int right;
+			int left;
 
-		virtual bool GetBBox(AABB& box)const
-		{
-			if (m_root)
-				return m_root->GetBBox(box);
+			int hitCount = 0;
+
+			float closet_tmax = tMax;
+				
+			while (!todo.isEmpty())
+			{
+				index = todo.top();
+				tmpNode = &m_ltree[index];
+				todo.pop();
+
+				right = tmpNode->right;
+				left = tmpNode->left;
+
+				//  if box hited
+				if (tmpNode->box.Hit(r, tMin, closet_tmax))
+				{
+					// if node is a leaf
+					if (right == -1 && left == -1)
+					{
+						if (tmpNode->obj)
+						{
+							if (tmpNode->obj->Hit(r, tMin, closet_tmax, tmpRec))
+							{
+								if (tmpRec.t < closet_tmax && tmpRec.t>tMin)
+								{
+									rec = tmpRec;
+									closet_tmax = rec.t;
+									return true;
+								}
+							}
+						}
+						else
+						{
+							std::cerr << "Leaf node Hitable is null\n";
+						}
+						return false;
+					}
+					if (right != -1)
+					{
+						todo.push(tmpNode->right);
+					}
+					if (left != -1)
+					{
+						todo.push(tmpNode->left);
+					}
+				}
+			}
 			return false;
 		}
 
 	private:
 
-		BTNode* BuildTree(Hitable** list, size_t size)
+		BNode* BuildTree(Hitable** list, size_t size)
 		{
 			float minX = 0, maxX = 0, minY = 0, maxY = 0;
 			AABB tmpBox;
@@ -171,7 +115,7 @@ namespace ry
 			}
 			SortList(list, size, maxX - minX > maxY - minY);
 
-			BTNode* newRoot = new BTNode();
+			BNode* newRoot = new BNode();
 			if (size == 1)
 			{
 				newRoot->obj = list[0];
@@ -188,8 +132,8 @@ namespace ry
 			}
 			else if (size == 2)
 			{
-				newRoot->left = new BTNode;
-				newRoot->right = new BTNode;
+				newRoot->left = new BNode;
+				newRoot->right = new BNode;
 				newRoot->left->obj = list[0];
 				newRoot->right->obj = list[1];
 				AABB bl, br;
@@ -214,16 +158,49 @@ namespace ry
 			return newRoot;
 		}
 
-		BTNode* m_root;
-
-		Hitable** m_tree;
+		int BuildLinearTree(BNode* node)
+		{
+			if (node)
+			{
+				LBNode newLb;
+				newLb.obj = node->obj;
+				newLb.box = node->box;
+				m_ltree.push_back(newLb);
+				int curIndex = m_ltree.size() - 1;
+				int tmp = BuildLinearTree(node->left);
+				m_ltree[curIndex].left = tmp;
+				tmp = BuildLinearTree(node->right);
+				m_ltree[curIndex].right = tmp;
+				return curIndex;
+			}
+			return -1;
+		}
 
 		virtual void draw(RenderTarget& target, RenderStates states) const
 		{
-			BTNode::Travle(m_root, 0, [&](const int& depth, BTNode* node)
+			Stack<int>in_todo(m_ltree.size());
+			int index = 0;
+			in_todo.push(index);
+			const LBNode* tmpNode;
+			tmpNode = &m_ltree[index];
+			while (!in_todo.isEmpty())
+			{
+				if (!in_todo.isEmpty())
+					index = in_todo.top();
+				in_todo.pop();
+
+				//  draw
+				target.draw(tmpNode->box, states);
+
+				if (tmpNode->right != -1)
 				{
-					target.draw(*node, states);
-				});
+					in_todo.push(tmpNode->right);
+				}
+				if (tmpNode->left != -1)
+				{
+					in_todo.push(tmpNode->left);
+				}
+			}
 		}
 
 		/// <summary>
@@ -269,7 +246,14 @@ namespace ry
 			}
 		}
 
-	};
+		/***********************************************************/
 
+		BNode* m_root;
+
+		vector<LBNode> m_ltree;
+
+		Stack<int> todo;
+
+	};
 }
-#endif // !BVH_H
+#endif // !BVHTREE_H

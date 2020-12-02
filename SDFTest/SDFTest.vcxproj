@@ -150,7 +150,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AABB.h" />
+    <ClInclude Include="BNode.h" />
     <ClInclude Include="BVH.h" />
+    <ClInclude Include="BVHTree.h" />
     <ClInclude Include="DifferenceHit.h" />
     <ClInclude Include="Hitable.h" />
     <ClInclude Include="HitList.h" />
@@ -162,6 +164,7 @@
     <ClInclude Include="RayMath.h" />
     <ClInclude Include="Sdf.h" />
     <ClInclude Include="Sphere.h" />
+    <ClInclude Include="Stack.h" />
     <ClInclude Include="UnionHit.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

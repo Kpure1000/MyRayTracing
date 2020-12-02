@@ -80,5 +80,14 @@
     <ClInclude Include="RayMath.h">
       <Filter>头文件\util</Filter>
     </ClInclude>
+    <ClInclude Include="BNode.h">
+      <Filter>头文件\BVH</Filter>
+    </ClInclude>
+    <ClInclude Include="Stack.h">
+      <Filter>头文件\util</Filter>
+    </ClInclude>
+    <ClInclude Include="BVHTree.h">
+      <Filter>头文件\BVH</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
