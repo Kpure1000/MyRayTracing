@@ -22,7 +22,7 @@ void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int
 int main()
 {
 	Srand48((unsigned int)time(NULL));
-	unsigned int width = 1920, height = 1080;
+	unsigned int width = 800, height = 600;
 
 	std::cout << "SDF test in ray tracing, 2D, with SFML.\nstart.\n\n";
 
@@ -100,13 +100,13 @@ void RandomWorld(HitList* world, sf::Vector2f origin, int width, int height, int
 		if (r < 5)
 		{
 			world->AddHitable(new Sphere(new SdfSphere(
-				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 10.0f - rand() % 8
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 50.0f - rand() % 28
 			), new Dielectric(1.5f)));
 		}
 		else
 		{
 			world->AddHitable(new Sphere(new SdfSphere(
-				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 10.0f - rand() % 8
+				sf::Vector2f((float)width - rand() % width, (float)height - rand() % height) + origin, 50.0f - rand() % 28
 			), new Metal()));
 		}
 	}

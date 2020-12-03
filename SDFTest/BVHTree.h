@@ -38,7 +38,7 @@ namespace ry
 		{
 		}
 
-		virtual bool Hit(const Ray& r, const float& tMin,
+		bool Hit(const Ray& r, const float& tMin,
 			const float& tMax, HitRecord& rec)
 		{
 			HitRecord tmpRec = rec;
@@ -68,7 +68,7 @@ namespace ry
 					{
 						todo.push(tmpNode->right);
 					}
-					else if (tmpNode->left == -1 && tmpNode->right == -1)//叶节点
+					else if (tmpNode->left == -1)//叶节点
 					{
 						if (tmpNode->obj->Hit(r, tMin, tMax, tmpRec))
 						{
@@ -237,14 +237,14 @@ namespace ry
 
 		vector<LBNode> m_ltree;
 
-		struct TodoRecord
-		{
-			TodoRecord() {}
-			TodoRecord(const int& Index) :index(Index) {}
-			int index = -1;
-			bool isHited = false;
-			HitRecord rec;
-		};
+		//struct TodoRecord
+		//{
+		//	TodoRecord() {}
+		//	TodoRecord(const int& Index) :index(Index) {}
+		//	int index = -1;
+		//	bool isHited = false;
+		//	HitRecord rec;
+		//};
 
 		Stack<int> todo;
 
