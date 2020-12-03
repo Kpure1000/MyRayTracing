@@ -52,6 +52,8 @@ void Scence::LoadSomeBalls()
 		new Constant_Texture({ 1.0f,1.0f,1.0f }), 1.4f
 	)));
 
+	bvh = new BVH(world->list, world->size, 0, 0);
+
 	skybox = new Skybox(new Illumination(
 		new Customize_Texture(
 		[](const float& u, const float& v, const Vector3& p)->Vector3
@@ -91,6 +93,8 @@ void Scence::LoadIntersectionBall()
 
 	world->AddHitable(new Rect(new SdfRect_xy(-37, -35.5f, 37, 38.5f, 5.1f), new Lambertian(new Constant_Texture({ 0.1,0.1,0.1 }))));
 
+	bvh = new BVH(world->list, world->size, 0, 0);
+
 	skybox = new Skybox(new Illumination(
 		new Customize_Texture(
 		[](const float& u, const float& v, const Vector3& p)->Vector3
@@ -128,6 +132,8 @@ void Scence::LoadUnionBall()
 	world->AddHitable(new Sphere(new SdfSphere({ -0.0f, -2.5f, -7.0f }, 3.0f),
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));
 
+	bvh = new BVH(world->list, world->size, 0, 0);
+
 	skybox = new Skybox(new Illumination(
 		new Image_Texture("../data/texture/skybox.jpg")
 		, 0.8f));
@@ -159,6 +165,8 @@ void Scence::LoadDifferenceBall()
 		new Transparent()));
 	world->AddHitable(new Sphere(new SdfSphere({ -0.0f, -2.5f, -7.0f }, 3.0f),
 		new Metal(new Constant_Texture({ 1.0f,1.0f,1.0f }), 0.0f)));*/
+
+	bvh = new BVH(world->list, world->size, 0, 0);
 
 	skybox = new Skybox(new Illumination(
 		new Image_Texture("../data/texture/red_hill_curve.jpg")
@@ -296,6 +304,8 @@ void Scence::LoadCornellBox()
 
 	world->AddHitable(new Sphere(new SdfSphere({ 347.5f,420.0f,377.5f }, 90.0f),
 		new Metal(new Constant_Texture({ 0.4f,0.4f,1.0f }), 0.0f)));
+
+	bvh = new BVH(world->list, world->size, 0, 0);
 
 	// skybox init
 	skybox = new Skybox(new Illumination(

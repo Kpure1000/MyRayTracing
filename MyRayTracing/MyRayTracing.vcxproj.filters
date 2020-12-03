@@ -164,5 +164,11 @@
     <ClInclude Include="rtx\render\RenderWindow.h">
       <Filter>头文件\rtx\render</Filter>
     </ClInclude>
+    <ClInclude Include="BVHNode.h">
+      <Filter>头文件\util</Filter>
+    </ClInclude>
+    <ClInclude Include="Stack.h">
+      <Filter>头文件\util</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

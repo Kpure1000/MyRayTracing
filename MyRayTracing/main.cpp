@@ -1,7 +1,7 @@
 #include "RayTracer.h"
 #include "Scence.h"
 #include"rtx/render/RenderWindow.h"
-
+#include"BVHNode.h"
 #include<iostream>
 #include<fstream>
 #include<ctime>
@@ -307,9 +307,8 @@ int run(ofstream& out, Scence& scence, const std::string& imageFileName)
 
 int main()
 {
-
-	RayMath::Srand48((unsigned int)time(NULL));
-
+	//RayMath::Srand48((unsigned int)time(NULL));
+	RayMath::Srand48(4);
 #pragma region Load Log
 
 	ifstream testReader("cpuRenderLog.txt");

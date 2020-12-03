@@ -20,28 +20,47 @@ namespace ry
 		{
 			rect[0] = pMin;
 			rect[1] = pMax;
+			rect[2] = (pMin + pMax) * 0.5f;
 		}
 
 		AABB(const Vector3& middle, const Vector3& pMin, const Vector3& pMax)
 		{
 			rect[0] = pMin;
 			rect[1] = pMax;
+			rect[2] = (pMin + pMax) * 0.5f;
 		}
 
 		bool Hit(const Ray& r, float tMin, float tMax)const
 		{
 			float div, t0, t1;
-			for (int i = 0; i < 3; i++)
-			{
-				div = 1.0f / r.direction[i];
-				t0 = (rect[0][i] - r.origin[i]) * div;
-				t1 = (rect[1][i] - r.origin[i]) * div;
-				if (div < 0.0f)
-					std::swap(t0, t1);
-				tMin = t0 > tMin ? t0 : tMin;
-				tMax = t1 < tMax ? t1 : tMax;
-				if (tMax <= tMin)return false;
-			}
+			//  x
+			div = 1.0f / r.direction[0];
+			t0 = (rect[0][0] - r.origin[0]) * div;
+			t1 = (rect[1][0] - r.origin[0]) * div;
+			if (div < 0.0f)
+				std::swap(t0, t1);
+			tMin = t0 > tMin ? t0 : tMin;
+			tMax = t1 < tMax ? t1 : tMax;
+			if (tMax <= tMin)return false;
+			//y
+			div = 1.0f / r.direction[1];
+			t0 = (rect[0][1] - r.origin[1]) * div;
+			t1 = (rect[1][1] - r.origin[1]) * div;
+			if (div < 0.0f)
+				std::swap(t0, t1);
+			tMin = t0 > tMin ? t0 : tMin;
+			tMax = t1 < tMax ? t1 : tMax;
+			if (tMax <= tMin)return false;
+			//z
+			div = 1.0f / r.direction[2];
+			t0 = (rect[0][2] - r.origin[2]) * div;
+			t1 = (rect[1][2] - r.origin[2]) * div;
+			if (div < 0.0f)
+				std::swap(t0, t1);
+			tMin = t0 > tMin ? t0 : tMin;
+			tMax = t1 < tMax ? t1 : tMax;
+			if (tMax <= tMin)return false;
+
 			return true;
 		}
 
@@ -60,7 +79,14 @@ namespace ry
 			return AABB(pMin, pMax);
 		}
 
-		Vector3 rect[2];
+		void SetBox(Vector3 const& pMin, Vector3 const& pMax)
+		{
+			rect[0] = pMin;
+			rect[1] = pMax;
+			rect[2] = (pMin + pMax) * 0.5f;
+		}
+
+		Vector3 rect[3];
 
 	};
 }

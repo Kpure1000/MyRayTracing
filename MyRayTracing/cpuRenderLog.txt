@@ -1,0 +1,93 @@
+Thu Dec  3 11:50:40 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):403, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 40.984s.
+--------------------------
+Thu Dec  3 11:53:40 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 37.648s.
+--------------------------
+Thu Dec  3 12:00:54 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+Thu Dec  3 12:01:28 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 46.534s.
+--------------------------
+Thu Dec  3 12:03:40 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 32.241s.
+--------------------------
+Thu Dec  3 12:06:09 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 23.144s.
+--------------------------
+Thu Dec  3 12:07:37 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 26.945s.
+--------------------------
+Thu Dec  3 12:19:13 2020
+
+Rendering Log: 
+
+Is the sampling optimization allowed? : N
+Render quality: 512*288, sample numbers: 100, tracing depth: 5.
+Scence objects number(s):401, aperture: 0.01.
+Render mode: Multi-threadTask number(s): 4
+Start rendering...
+rendering compeleted.
+CPU rendering compeleted, with time of 32.842s.
+--------------------------

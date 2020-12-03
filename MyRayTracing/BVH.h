@@ -1,187 +1,248 @@
 #ifndef BVH_H
 #define BVH_H
 #include "Hitable.h"
+#include"BVHNode.h"
+#include"Stack.h"
 #include"RayMath.h"
 #include <memory>
 namespace ry
 {
 
-	class BTNode : public Hitable
-	{
-	public:
-		BTNode()
-		{
-			sub[0] = sub[1] = nullptr;
-		}
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
-		{
-			if (box.Hit(r, tMin, tMax))
-			{
-				HitRecord recL, recR;
-				bool hitL = false;
-				bool hitR = false;
-				if (sub[0])hitL = sub[0]->Hit(r, tMin, tMax, recL);
-				if (sub[1])hitR = sub[1]->Hit(r, tMin, tMax, recR);
-				if (hitL && hitR)
-				{
-					if (recL.t < recR.t)
-						rec = recL;
-					else
-						rec = recR;
-					return true;
-				}
-				else if (hitL)
-				{
-					rec = recL;
-					return true;
-				}
-				else if (hitR)
-				{
-					rec = recR;
-					return true;
-				}
-			}
-			return false;
-		}
-
-		virtual bool GetBBox(float t0, float t1, AABB& box)const
-		{
-			box = this->box;
-			return true;
-		}
-
-		AABB box;
-
-		Hitable* sub[2];
-	};
-
-	class BVH : public Hitable
+	class BVH
 	{
 	public:
 
-		BVH() :root(nullptr) {}
+		BVH() :m_root(nullptr) {}
 
-		BVH(Hitable** list, int n, float t0, float t1) :root(nullptr)
+		BVH(Hitable** list, int n, float t0, float t1) :m_root(nullptr)
 		{
-			root = BuildBVH(list, n, t0, t1);
-
-			//测试树:
-			/*int count = 0;
-			VisitBVHTree(root, count);
-			printf("BVH有节点: %d个\n", count);*/
+			m_root = BuildBVH(list, n, t0, t1);
+			BuildLinearTree(m_root);
+			todo.SetSize(m_ltree.size());
 		}
 
-		void VisitBVHTree(BTNode* root, int& count)
+		bool Hit(const Ray& r, const float& tMin,
+			const float& tMax, HitRecord& rec)
 		{
-			if (root != nullptr)
+			HitRecord tmpRec = rec;
+			rec.t = tMax + 1.0f;
+			int index = 0;
+			todo.clear();
+			todo.push(index);
+
+			LBNode* tmpNode;
+
+			bool isHited = false;
+
+			while (!todo.isEmpty())
 			{
-				count++;
-				VisitBVHTree((BTNode*)root->sub[0], count);
-				VisitBVHTree((BTNode*)root->sub[1], count);
+				index = todo.top();
+				todo.pop();
+				tmpNode = &m_ltree[index];
+				if (tmpNode->box.Hit(r, tMin, tMax))
+				{
+					if (tmpNode->left != -1)
+					{
+						todo.push(tmpNode->left);
+					}
+					if (tmpNode->right != -1)
+					{
+						todo.push(tmpNode->right);
+					}
+					else if (tmpNode->left == -1)//叶节点
+					{
+						if (tmpNode->obj->Hit(r, tMin, tMax, tmpRec))
+						{
+							rec = tmpRec.t < rec.t ? tmpRec : rec;
+							isHited = true;
+						}
+					}
+				}
 			}
+			return isHited;
+
+			/*if (m_root)
+				return m_root->Hit(r, tMin, tMax, rec);
+			return false;*/
+
 		}
 
-		/*~BVH()
+		bool GetBBox(float t0, float t1, AABB& box)
 		{
-
-		}*/
-
-		virtual bool Hit(const Ray& r, const float& tMin,
-			const float& tMax, HitRecord& rec)const
-		{
-			if (root)
-				return root->Hit(r, tMin, tMax, rec);
-			return false;
-		}
-
-		virtual bool GetBBox(float t0, float t1, AABB& box)const
-		{
-			if (root)
-				return root->GetBBox(t0, t1, box);
+			if (m_root)
+			{
+				box = m_root->box;
+				return true;
+			}
 			return false;
 		}
 
 	private:
 
-		BTNode* BuildBVH(Hitable** list, int n, float t0, float t1)
+		BNode* BuildBVH(Hitable** list, int n, float t0, float t1)
 		{
-			int axis = int(3 * RayMath::Drand48());
-			if (axis == 0)
-				qsort(list, n, sizeof(Hitable*), [](const void* a, const void* b)->int
-					{
-						AABB boxL, boxR;
-						Hitable* hitA = *(Hitable**)a;
-						Hitable* hitB = *(Hitable**)b;
-						if (!hitA->GetBBox(0, 0, boxL) || !hitB->GetBBox(0, 0, boxR))
-						{
-							std::cerr << "No bounding box in BNode constructor.\n";
-						}
-						if (boxL.rect[0][0] - boxR.rect[0][0] < 0.0f)
-							return -1;
-						else
-							return 1;
-					});
-			else if (axis == 1)
-				qsort(list, n, sizeof(Hitable*), [](const void* a, const void* b)->int
-					{
-						AABB boxL, boxR;
-						Hitable* hitA = *(Hitable**)a;
-						Hitable* hitB = *(Hitable**)b;
-						if (!hitA->GetBBox(0, 0, boxL) || !hitB->GetBBox(0, 0, boxR))
-						{
-							std::cerr << "No bounding box in BNode constructor.\n";
-						}
-						if (boxL.rect[0][1] - boxR.rect[0][1] < 0.0f)
-							return -1;
-						else
-							return 1;
-					});
-			else
-				qsort(list, n, sizeof(Hitable*), [](const void* a, const void* b)->int
-					{
-						AABB boxL, boxR;
-						Hitable* hitA = *(Hitable**)a;
-						Hitable* hitB = *(Hitable**)b;
-						if (!hitA->GetBBox(0, 0, boxL) || !hitB->GetBBox(0, 0, boxR))
-						{
-							std::cerr << "No bounding box in BNode constructor.\n";
-						}
-						if (boxL.rect[0][2] - boxR.rect[0][2] < 0.0f)
-							return -1;
-						else
-							return 1;
-					});
-			BTNode* broot = new BTNode();
+			/*Vector3 vMin, vMax;
+			AABB tmpBox;
+			for (size_t i = 0; i < n; i++)
+			{
+				if (!list[i]->GetBBox(t0, t1, tmpBox))return nullptr;
+				vMin[0] = tmpBox.rect[2][0] < vMin[0] ? tmpBox.rect[2][0] : vMin[0];
+				vMin[1] = tmpBox.rect[2][1] < vMin[1] ? tmpBox.rect[2][1] : vMin[1];
+				vMin[2] = tmpBox.rect[2][2] < vMin[2] ? tmpBox.rect[2][2] : vMin[2];
+				vMax[0] = tmpBox.rect[2][0] > vMax[0] ? tmpBox.rect[2][0] : vMax[0];
+				vMax[1] = tmpBox.rect[2][1] > vMax[1] ? tmpBox.rect[2][1] : vMax[1];
+				vMax[2] = tmpBox.rect[2][2] > vMax[2] ? tmpBox.rect[2][2] : vMax[2];
+			}
+			if (vMax[0] - vMin[0] > vMax[1] - vMin[1]
+				&& vMax[0] - vMin[0] > vMax[2] - vMin[2])
+			{
+				SortList(list, n, SortAxis::X_SORT);
+			}
+			else if (vMax[1] - vMin[1] > vMax[0] - vMin[0]
+				&& vMax[1] - vMin[1] > vMax[2] - vMin[2])
+			{
+				SortList(list, n, SortAxis::Y_SORT);
+			}
+			else if (vMax[2] - vMin[2] > vMax[0] - vMin[0]
+				&& vMax[2] - vMin[2] > vMax[1] - vMin[1])
+			{
+				SortList(list, n, SortAxis::Z_SORT);
+			}*/
 
+			BNode* newRoot = new BNode();
 			if (n == 1)
 			{
-				broot->sub[0] = broot->sub[1] = (BTNode*)list[0];
+				newRoot->obj = list[0];
+				AABB b;
+				if (newRoot->obj->GetBBox(t0, t1, b))
+				{
+					newRoot->box = b;
+				}
+				else
+				{
+					std::cerr << "No bounding in self node\n";
+				}
 			}
 			else if (n == 2)
 			{
-				broot->sub[0] = list[0];
-				broot->sub[1] = list[1];
+				newRoot->left = new BNode;
+				newRoot->right = new BNode;
+				newRoot->left->obj = list[0];
+				newRoot->right->obj = list[1];
+				AABB bl, br;
+				if (!newRoot->left->obj->GetBBox(t0, t1, bl) 
+					|| !newRoot->right->obj->GetBBox(t0, t1, br))
+				{
+					std::cerr << "No bounding in sub node\n";
+				}
+				newRoot->left->box = bl;
+				newRoot->right->box = br;
+				newRoot->box = AABB::UnionBox(bl, br);
 			}
 			else
 			{
-				broot->sub[0] = BuildBVH(list, n / 2, t0, t1);
-				broot->sub[1] = BuildBVH(list + n / 2, n - n / 2, t0, t1);
+				int mid = n / 2;
+				newRoot->left = BuildBVH(list, mid, t0, t1);
+				newRoot->right = BuildBVH(list + mid, n - mid, t0, t1);
+				newRoot->box = AABB::UnionBox(newRoot->left->box, newRoot->right->box);
 			}
-			AABB boxL, boxR;
-			if (!broot->sub[0]->GetBBox(0, 0, boxL) || !broot->sub[0]->GetBBox(0, 0, boxR))
-			{
-				std::cerr << "No bounding box in BNode constructor.!\n";
-			}
-
-			broot->box = AABB::UnionBox(boxL, boxR);
-
-			return broot;
+			return newRoot;
 		}
 
-		BTNode* root;
+		int BuildLinearTree(BNode* node)
+		{
+			if (node)
+			{
+				LBNode newLb;
+				newLb.obj = node->obj;
+				newLb.box = node->box;
+				m_ltree.push_back(newLb);
+				int curIndex = m_ltree.size() - 1;
+				int tmp = BuildLinearTree(node->left);
+				m_ltree[curIndex].left = tmp;
+				tmp = BuildLinearTree(node->right);
+				m_ltree[curIndex].right = tmp;
+				return curIndex;
+			}
+			return -1;
+		}
 
+		enum class SortAxis
+		{
+			X_SORT,
+			Y_SORT,
+			Z_SORT
+		};
+
+		static void SortList(Hitable** list, size_t size, SortAxis sortAxis)
+		{
+			switch (sortAxis)
+			{
+			case SortAxis::X_SORT:
+				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
+					{
+						AABB xbox, ybox;
+						Hitable* hx = *(Hitable**)x;
+						Hitable* hy = *(Hitable**)y;
+						if (!hx->GetBBox(0, 0, xbox) || !hy->GetBBox(0, 0, ybox))
+						{
+							std::cerr << "No bounding in bnode\n";
+						}
+						if (xbox.rect[2][0] - ybox.rect[2][0] < 0.0f)
+							return -1;
+						return 1;
+					});
+				break;
+			case SortAxis::Y_SORT:
+				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
+					{
+						AABB xbox, ybox;
+						Hitable* hx = *(Hitable**)x;
+						Hitable* hy = *(Hitable**)y;
+						if (!hx->GetBBox(0, 0, xbox) || !hy->GetBBox(0, 0, ybox))
+						{
+							std::cerr << "No bounding in bnode\n";
+						}
+						if (xbox.rect[2][1] - ybox.rect[2][1] < 0.0f)
+							return -1;
+						return 1;
+					});
+				break;
+			case SortAxis::Z_SORT:
+				std::qsort(list, size, sizeof(Hitable*), [](const void* x, const void* y)->int
+					{
+						AABB xbox, ybox;
+						Hitable* hx = *(Hitable**)x;
+						Hitable* hy = *(Hitable**)y;
+						if (!hx->GetBBox(0, 0, xbox) || !hy->GetBBox(0, 0, ybox))
+						{
+							std::cerr << "No bounding in bnode\n";
+						}
+						if (xbox.rect[2][2] - ybox.rect[2][2] < 0.0f)
+							return -1;
+						return 1;
+					});
+				break;
+			default:
+				break;
+			}
+		}
+
+
+		/// <summary>
+		/// Root of BVH Bsp
+		/// </summary>
+		BNode* m_root;
+
+		/// <summary>
+		/// Linear BVH Bsp
+		/// </summary>
+		vector<LBNode> m_ltree;
+
+		/// <summary>
+		/// Todo stack
+		/// </summary>
+		Stack<int>todo;
 	};
 
 

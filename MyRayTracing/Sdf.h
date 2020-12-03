@@ -138,6 +138,7 @@ namespace sdf
 		{
 			box.rect[0] = center - Vector3(radius, radius, radius);
 			box.rect[1] = center + Vector3(radius, radius, radius);
+			box.rect[2] = (box.rect[0] + box.rect[1]) * 0.5f;
 			return true;
 		}
 
